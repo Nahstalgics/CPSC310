@@ -1,5 +1,19 @@
 import { IInsightFacade, InsightDataset, InsightDatasetKind, InsightResult } from "./IInsightFacade";
 
+
+interface Section {
+	uuid: string;
+	id: string;
+	title: string;
+	instructor: string;
+	dept: string;
+	year: number;
+	avg: number;
+	pass: number;
+	fail: number;
+	audit: number;
+}
+
 /**
  * This is the main programmatic entry point for the project.
  * Method documentation is in IInsightFacade
