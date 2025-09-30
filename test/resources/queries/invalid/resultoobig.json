@@ -1,0 +1,19 @@
+{
+	"title": "Too many results",
+	"input": {
+		"WHERE": {
+			"LT": {
+				"sections_avg": 97
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept",
+				"sections_avg"
+			]
+
+		}
+	},
+	"errorExpected": true,
+	"expected": "ResultTooLargeError"
+}

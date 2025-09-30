@@ -1,0 +1,17 @@
+{
+	"title": "ref nonexistent",
+	"input": {
+		"WHERE": {
+			"IS": {
+				"ubc_dept": "cpsc"
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"ubc_dept"
+			]
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

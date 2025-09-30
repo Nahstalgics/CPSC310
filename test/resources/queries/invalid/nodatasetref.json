@@ -1,0 +1,19 @@
+{
+	"title": "Too many datasets",
+	"input": {
+		"WHERE": {
+			"GT": {
+				"ubc_avg": 97
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"ubc_dept",
+				"ubc_avg"
+			],
+			"ORDER": "sections_avg"
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

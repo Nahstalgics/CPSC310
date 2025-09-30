@@ -1,0 +1,1909 @@
+{
+	"title": "No Title Specified",
+	"input": {
+		"WHERE": {
+			"NOT": {
+				"NOT": {
+					"IS": {
+						"sections_dept": "asia"
+					}
+				}
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept"
+			]
+		}
+	},
+	"errorExpected": false,
+	"expected": [
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		},
+		{
+			"sections_dept": "asia"
+		}
+	]
+}

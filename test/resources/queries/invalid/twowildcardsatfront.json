@@ -1,0 +1,19 @@
+{
+	"title": "2 wildcards in the front",
+	"input": {
+		"WHERE": {
+			"IS": {
+				"sections_dept": "**sc"
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept",
+				"sections_avg"
+			],
+			"ORDER": "sections_avg"
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}
