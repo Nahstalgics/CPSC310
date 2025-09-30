@@ -1,4 +1,4 @@
-import { IInsightFacade, InsightDataset, InsightDatasetKind, InsightResult } from "./IInsightFacade";
+import { IInsightFacade, InsightDataset, InsightDatasetKind, InsightResult, InsightError } from "./IInsightFacade";
 
 
 interface Section {
@@ -20,8 +20,20 @@ interface Section {
  *
  */
 export default class InsightFacade implements IInsightFacade {
+
+	private idValid(id: string): boolean {
+		return !(id.includes("_") || id.trim().length === 0);
+
+	}
+
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
-		// TODO: Remove this once you implement the methods!
+		if (kind === InsightDatasetKind.Sections) {
+
+		} else {
+			throw new InsightError("Invalid InsightDatasetKind");
+		}
+
+		//remove later
 		throw new Error(
 			`InsightFacadeImpl::addDataset() is unimplemented! - id=${id}; content=${content?.length}; kind=${kind}`
 		);
