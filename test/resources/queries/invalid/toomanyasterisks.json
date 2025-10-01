@@ -1,0 +1,17 @@
+{
+	"title": "Too many asterisk!",
+	"input": {
+		"WHERE": {
+			"IS": {
+				"sections_instructor": "**Smith**"
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_instructor"
+			]
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

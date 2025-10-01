@@ -1,0 +1,28 @@
+{
+	"title": "Testing year = 1900",
+	"input": {
+		"WHERE": {
+			"AND": [
+				{
+					"EQ": {
+						"sections_year": 1900
+					}
+				},
+				{
+					"GT": {
+						"sections_avg": 85
+					}
+				}
+			]
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept",
+				"sections_avg"
+			],
+			"ORDER": "sections_avg"
+		}
+	},
+	"errorExpected": true,
+	"expected": "ResultTooLargeError"
+}

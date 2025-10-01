@@ -1,0 +1,8 @@
+{
+	"title": "Can't reference multiple",
+	"input": {
+		"OPTIONS": {}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}

@@ -1,0 +1,17 @@
+{
+	"title": "Wrong compare type in is",
+	"input": {
+		"WHERE": {
+			"IS": {
+				"sections_dept": 123
+			}
+		},
+		"OPTIONS": {
+			"COLUMNS": [
+				"sections_dept"
+			]
+		}
+	},
+	"errorExpected": true,
+	"expected": "InsightError"
+}
