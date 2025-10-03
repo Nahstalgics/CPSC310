@@ -14,6 +14,7 @@ interface Section {
 	audit: number;
 }
 
+// CREATE INTERFACE - 	TODO !!!
 // Operators by catagory (EBNF)
 const LOGICS = new Set(["AND", "OR"]);
 const NEGATION = "NOT";
@@ -26,6 +27,7 @@ const IDSTRING = "[^_]+";
 // mkey = "<idstring>_<mfield>"
 const MFIELD = "(avg|pass|fail|audit|year)";
 const MKEY_RE = new RegExp(`^"${IDSTRING}_${MFIELD}"$`); // matches a QUOTED property name (as text)
+// RegExp() describes a text pattern you can use to test, search, or extract strings
 
 // skey = "<idstring>_<sfield>"
 const SFIELD = "(dept|id|instructor|title|uuid)";
@@ -110,8 +112,6 @@ export default class InsightFacade implements IInsightFacade {
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
 		// addDataset = process zip files into array of Sections
 
-		// TODO: Remove this once you implement the methods!
-
 		let parsed: unknown;
 
 		// check if incoming query is a string (eg. raw JSON string)
@@ -159,7 +159,8 @@ export default class InsightFacade implements IInsightFacade {
 	// LOGICCOMPARISON ::= LOGIC ':[' FILTER_LIST ']'
 	// NEGATION ::= 'NOT :{' FILTER '}'
 	// MCOMPARISON ::= MCOMPARATOR ':{' mkey ':' number '}'
-	// SCOMPARISON ::= 'IS:{' skey ': "' [*]? inputstring [*]? '" }'  // Asterisks at the beginning or end of the inputstring should act as wildcards.
+	// SCOMPARISON ::= 'IS:{' skey ': "' [*]? inputstring [*]? '" }'
+	// 		Asterisks at the beginning or end of the inputstring should act as wildcards.
 	private async validateWhere(node: unknown, path: string): Promise<void> {
 		if (this.isEmptyObject(node)) return; // empty WHERE:{} is valid
 
@@ -230,15 +231,88 @@ export default class InsightFacade implements IInsightFacade {
 	 * - That value must be a finite number
 	 */
 	private validateMComparison(node: unknown, path: string): void {
-		// TODO !!!
-		// ...
+		this.assertObj(node, path);
+		const obj = node as Record<string, unknown>;
+		const keys = Object.keys(obj);
+
+		if (keys.length !== 1) {
+			throw new InsightError(`${path}: must have exactly one mkey: number`);
+		}
+
+		const mkey = keys[0];
+		const val = obj[mkey];
+
+		// STRICT mkey shape: allow either:
+		//	- QUOTED from (when treated as text), eg. "\"course_avg\"" matches MKEY_RE
+		//	- UNQUOTED frim (how JS stores object propert names), eg. "course_avg" matches MKEY_UNQUOTED_RE
+		const quoted = JSON.stringify(mkey);
+		const mkeyValid = MKEY_RE.test(quoted) || MKEY_UNQUOTED_RE.test(mkey);
+		if (!mkeyValid) {
+			throw new InsightError(`${path}: invalid mkey '${mkey}' 
+				(expected "<idstring>_<avg|pass|fail|audit|year>")`);
+		}
+
+		// Value must be a number and not a NaN (Not a Number)
+		if (typeof val !== "number" || Number.isNaN(val)) {
+			throw new InsightError(`${path}.${mkey}: value must be a number`);
+		}
 	}
 
+	/** SCOMPARISON ::= 'IS:{' skey ': "' [*]? inputstring [*]? '" }'
+	 * - Inner value must be an object with exactly one property
+	 * - That property (skey) must match "<idstring>_(dept|id|instructor|title|uuid)"
+	 * - That value must be a string
+	 * - '*' allowed only at the start and/or end (not inside)
+	 */
 	private validateSComparison(node: unknown, path: string): void {
 		// TODO !!!
+		this.assertObj(node, path);
+		const obj = node as Record<string, unknown>;
+		const keys = Object.keys(obj);
+
+		if (keys.length !== 1) {
+			throw new InsightError(`${path}: must have exactly one skey: string`);
+		}
+
+		const skey = keys[0];
+		const val = obj[skey];
+
+		// STRICT skey shape: support quoted and unquoted checks
+		const quoted = JSON.stringify(skey);
+		const skeyValid = SKEY_RE.test(quoted) || SKEY_UNQUOTED_RE.test(skey);
+		if (!skeyValid) {
+			throw new InsightError(`${path}: invalid skey '${skey}' 
+				(expected "<idstring>_<dept|id|instructor|title|uuid>")`);
+		}
+
+		if (!this.isString(val)) {
+			throw new InsightError(`${path}.${skey}: value must be a string`);
+		}
+
+		if (!this.isValidISPattern(val)) {
+			throw new InsightError(
+				`${path}.${skey}: IS value must have '*' only at start/end 
+				(examples: "foo", "*foo", "foo*", "*foo*")`
+			);
+		}
 	}
 
 	// ===== Helpers =====
+	// inputstring (for IS): zero or more non-* chars; allow optional leading and/or trailing '*'
+	private isValidISPattern(s: unknown): s is string {
+		if (typeof s !== "string") return false;
+		// Allowed forms: "abc", "*abc", "abc*", "*abc*"
+		// (no internal asterisks beyond the edges)
+		const inner = s.replace(/^\*/, "").replace(/\*$/, "");
+		const hasOnlyEdgeAsterisks = s === inner || s === `*${inner}` || s === `${inner}*` || s === `*${inner}*`;
+		const innerHasNoAsterisk = !inner.includes("*");
+		return hasOnlyEdgeAsterisks && innerHasNoAsterisk;
+	}
+
+	private isString(x: unknown): x is string {
+		return typeof x === "string";
+	}
+
 	private assertObj(x: unknown, path: string): asserts x is object {
 		if (!x || typeof x !== "object" || Array.isArray(x)) {
 			// reject null, primitives, arrays
@@ -247,7 +321,7 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	// Ensure all required keys are present in 'actual'
-	private requireKeys(actual: string[], required: string[], path: string) {
+	private requireKeys(actual: string[], required: string[], path: string): void {
 		for (const k of required) {
 			if (!actual.includes(k)) {
 				throw new InsightError(`${path}: missing '${k}'`);
@@ -256,7 +330,7 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	// Forbid any keys not listed in 'allowed'
-	private forbidExtra(actual: string[], allowed: string[], path: string) {
+	private forbidExtra(actual: string[], allowed: string[], path: string): void {
 		for (const k of actual) {
 			if (!allowed.includes(k)) {
 				throw new InsightError(`${path}: unexpected key '${k}'`);
@@ -267,21 +341,10 @@ export default class InsightFacade implements IInsightFacade {
 	private isEmptyObject(x: unknown): boolean {
 		return (
 			!!x && // gives boolean equivalent of x's truthness
-			typeof x === "object" && // must be object
-			!Array.isArray(x) && // not an array
+			typeof x === "object" &&
+			!Array.isArray(x) &&
 			Object.keys(x).length === 0
-		); // no keys
-	}
-
-	// inputstring (for IS): zero or more non-* chars; allow optional leading and/or trailing '*'
-	private isValidISPattern(s: unknown): s is string {
-		if (typeof s !== "string") return false;
-		// Allowed forms: "abc", "*abc", "abc*", "*abc*"
-		// (no internal asterisks beyond the edges)
-		const inner = s.replace(/^\*/, "").replace(/\*$/, "");
-		const hasOnlyEdgeAsterisks = s === inner || s === `*${inner}` || s === `${inner}*` || s === `*${inner}*`;
-		const innerHasNoAsterisk = !inner.includes("*");
-		return hasOnlyEdgeAsterisks && innerHasNoAsterisk;
+		);
 	}
 
 	// important func
