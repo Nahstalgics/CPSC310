@@ -193,9 +193,9 @@ export default class InsightFacade implements IInsightFacade {
 				throw new InsightError(`${path}.${key}: must be a non-empty array of FILTER`);
 			}
 
-			for (let i = 0; i < arr.length; i++) {
-				await this.validateWhere(arr[i], `${path}.${key}[${i}]`);
-			}
+			const validations = arr.map(async (child, i) => this.validateWhere(child, `${path}.${key}[${i}]`));
+			await Promise.all(validations);
+
 			return;
 		}
 
@@ -220,8 +220,33 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	// ===== OPTIONS Validation =====
+	// OPTIONS ::= 'OPTIONS:{' COLUMNS '}' | 'OPTIONS:{' COLUMNS ', ORDER:' key '}'
 	private async validateOptions(node: unknown, path: string): Promise<void> {
-		// TODO !!!
+		this.assertObj(node, path);
+		const obj = node as Record<string, unknown>;
+		const keys = Object.keys(obj);
+
+		if (!("COLUMNS" in obj)) {
+			// COLUMNS is mandatory
+			throw new InsightError(`${path}: missing 'COLUMNS'`);
+		}
+
+		const columns = obj.COLUMNS;
+		if (!Array.isArray(columns) || columns.length === 0 || !columns.every(this.isString)) {
+			throw new InsightError(`${path}.COLUMNS must be a non-empty array of strings`);
+		}
+
+		if ("ORDER" in obj) {
+			if (!this.isString(obj.ORDER)) {
+				throw new InsightError(`${path}.ORDER must be a string`);
+			}
+			if (!columns.includes(obj.ORDER)) {
+				// must refrence one of the listed COLUMNS
+				throw new InsightError(`${path}.ORDER must be one of COLUMNS`);
+			}
+		}
+
+		this.forbidExtra(keys, ["COLUMNS", "ORDER"], path);
 	}
 
 	// ===== Leaf Validators =====
@@ -265,7 +290,6 @@ export default class InsightFacade implements IInsightFacade {
 	 * - '*' allowed only at the start and/or end (not inside)
 	 */
 	private validateSComparison(node: unknown, path: string): void {
-		// TODO !!!
 		this.assertObj(node, path);
 		const obj = node as Record<string, unknown>;
 		const keys = Object.keys(obj);
@@ -347,7 +371,7 @@ export default class InsightFacade implements IInsightFacade {
 		);
 	}
 
-	// important func
+	// one of main funcs
 	public async listDatasets(): Promise<InsightDataset[]> {
 		// TODO: Remove this once you implement the methods!
 		throw new Error(`InsightFacadeImpl::listDatasets is unimplemented!`);
