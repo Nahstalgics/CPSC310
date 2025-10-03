@@ -14,28 +14,16 @@ interface Section {
 	audit: number;
 }
 
-// CREATE INTERFACE - 	TODO !!!
-// Operators by catagory (EBNF)
-const LOGICS = new Set(["AND", "OR"]);
-const NEGATION = "NOT";
-const NUM_CMPS = new Set(["LT", "GT", "EQ"]); // MCOMPARATOR
-const STR_CMPS = new Set(["IS"]); // SCOMPARATOR
-
-// idstring: one or more chars except underscore
-const IDSTRING = "[^_]+";
-
-// mkey = "<idstring>_<mfield>"
-const MFIELD = "(avg|pass|fail|audit|year)";
-const MKEY_RE = new RegExp(`^"${IDSTRING}_${MFIELD}"$`); // matches a QUOTED property name (as text)
-// RegExp() describes a text pattern you can use to test, search, or extract strings
-
-// skey = "<idstring>_<sfield>"
-const SFIELD = "(dept|id|instructor|title|uuid)";
-const SKEY_RE = new RegExp(`^"${IDSTRING}_${SFIELD}"$`); // matches a QUOTED property name (as text)
-
-// Unquoted variants (objects parsed by JS have unquoted property names)
-const MKEY_UNQUOTED_RE = new RegExp(`^${IDSTRING}_${MFIELD}$`);
-const SKEY_UNQUOTED_RE = new RegExp(`^${IDSTRING}_${SFIELD}$`);
+interface GrammarConfig {
+	LOGICS: Set<string>;
+	NEGATION: string;
+	NUM_CMPS: Set<string>;
+	STR_CMPS: Set<string>;
+	MKEY_RE: RegExp;
+	SKEY_RE: RegExp;
+	MKEY_UNQUOTED_RE: RegExp;
+	SKEY_UNQUOTED_RE: RegExp;
+}
 
 /**
  * This is the main programmatic entry point for the project.
@@ -43,6 +31,32 @@ const SKEY_UNQUOTED_RE = new RegExp(`^${IDSTRING}_${SFIELD}$`);
  *
  */
 export default class InsightFacade implements IInsightFacade {
+	private readonly cfg: GrammarConfig = InsightFacade.makeDefaultConfig(); // one config per instance
+
+	private static makeDefaultConfig(): GrammarConfig {
+		// idstring: one or more chars except underscore
+		const IDSTRING = "[^_]+";
+		// mkey = "<idstring>_<mfield>"
+		const MFIELD = "(avg|pass|fail|audit|year)";
+		// skey = "<idstring>_<sfield>"
+		const SFIELD = "(dept|id|instructor|title|uuid)";
+
+		return {
+			LOGICS: new Set(["AND", "OR"]),
+			NEGATION: "NOT",
+			NUM_CMPS: new Set(["LT", "GT", "EQ"]), // MCOMPARATOR
+			STR_CMPS: new Set(["IS"]), // SCOMPARATOR
+
+			// RegExp() describes a text pattern you can use to test, search, or extract strings
+			MKEY_RE: new RegExp(`^"${IDSTRING}_${MFIELD}"$`), // matches a QUOTED property name (as text)
+			SKEY_RE: new RegExp(`^"${IDSTRING}_${SFIELD}"$`), // matches a QUOTED property name (as text)
+
+			// Unquoted variants (objects parsed by JS have unquoted property names)
+			MKEY_UNQUOTED_RE: new RegExp(`^${IDSTRING}_${MFIELD}$`),
+			SKEY_UNQUOTED_RE: new RegExp(`^${IDSTRING}_${SFIELD}$`),
+		};
+	}
+
 	private idValid(id: string): boolean {
 		return !(id.includes("_") || id.trim().length === 0);
 	}
@@ -177,7 +191,7 @@ export default class InsightFacade implements IInsightFacade {
 
 		// ------ NEGATION ------
 		// NEGATION ::= 'NOT :{' FILTER '}'
-		if (key === NEGATION) {
+		if (key === this.cfg.NEGATION) {
 			// Value must be an object representing a single FILTER node.
 			await this.validateWhere(obj[key], `${path}.NOT`);
 			return;
@@ -186,7 +200,7 @@ export default class InsightFacade implements IInsightFacade {
 		// ------ LOGIC ------
 		// LOGICCOMPARISON ::= LOGIC ':[' FILTER_LIST ']'
 		// FILTER_LIST must contain at least one FILTER (non-empty array)
-		if (LOGICS.has(key)) {
+		if (this.cfg.LOGICS.has(key)) {
 			// AND/OR
 			const arr = obj[key];
 			if (!Array.isArray(arr) || arr.length === 0) {
@@ -202,7 +216,7 @@ export default class InsightFacade implements IInsightFacade {
 		// ------- MCOMPARISON ------
 		// MCOMPARISON ::= MCOMPARATOR ':{' mkey ':' number '}'
 		// key is one of {LT, GT, EQ}. The value must be an object with exactly one numeric property.
-		if (NUM_CMPS.has(key)) {
+		if (this.cfg.NUM_CMPS.has(key)) {
 			this.validateMComparison(obj[key], `${path}.${key}`);
 			return;
 		}
@@ -210,7 +224,7 @@ export default class InsightFacade implements IInsightFacade {
 		// ------ SCOMPARISON ------
 		// SCOMPARISON ::= 'IS:{' skey ': "' [*]? inputstring [*]? '" }'
 		// key === 'IS'. The value must be an object with exactly one string property.
-		if (STR_CMPS.has(key)) {
+		if (this.cfg.STR_CMPS.has(key)) {
 			this.validateSComparison(obj[key], `${path}.IS`);
 			return;
 		}
@@ -271,7 +285,7 @@ export default class InsightFacade implements IInsightFacade {
 		//	- QUOTED from (when treated as text), eg. "\"course_avg\"" matches MKEY_RE
 		//	- UNQUOTED frim (how JS stores object propert names), eg. "course_avg" matches MKEY_UNQUOTED_RE
 		const quoted = JSON.stringify(mkey);
-		const mkeyValid = MKEY_RE.test(quoted) || MKEY_UNQUOTED_RE.test(mkey);
+		const mkeyValid = this.cfg.MKEY_RE.test(quoted) || this.cfg.MKEY_UNQUOTED_RE.test(mkey);
 		if (!mkeyValid) {
 			throw new InsightError(`${path}: invalid mkey '${mkey}' 
 				(expected "<idstring>_<avg|pass|fail|audit|year>")`);
@@ -303,7 +317,7 @@ export default class InsightFacade implements IInsightFacade {
 
 		// STRICT skey shape: support quoted and unquoted checks
 		const quoted = JSON.stringify(skey);
-		const skeyValid = SKEY_RE.test(quoted) || SKEY_UNQUOTED_RE.test(skey);
+		const skeyValid = this.cfg.SKEY_RE.test(quoted) || this.cfg.SKEY_UNQUOTED_RE.test(skey);
 		if (!skeyValid) {
 			throw new InsightError(`${path}: invalid skey '${skey}' 
 				(expected "<idstring>_<dept|id|instructor|title|uuid>")`);
