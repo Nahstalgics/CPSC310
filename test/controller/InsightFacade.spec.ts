@@ -146,6 +146,16 @@ describe("InsightFacade", function () {
 				expect(err).to.be.an.instanceOf(InsightError);
 			}
 		});
+
+		it("should reject with id of an already added dataset", async function () {
+			try {
+				await facade.addDataset("330", sections, InsightDatasetKind.Sections);
+				await facade.addDataset("330", sections, InsightDatasetKind.Sections);
+				return expect.fail("Should have thrown!");
+			} catch (err) {
+				return expect(err).to.be.an.instanceOf(InsightError);
+			}
+		});
 	});
 
 	describe("RemoveDataset", function () {

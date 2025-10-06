@@ -47,9 +47,10 @@ export default class InsightFacade implements IInsightFacade {
 			NUM_CMPS: new Set(["LT", "GT", "EQ"]), // MCOMPARATOR
 			STR_CMPS: new Set(["IS"]), // SCOMPARATOR
 
+			// matches a QUOTED property name (as text)
 			// RegExp() describes a text pattern you can use to test, search, or extract strings
-			MKEY_RE: new RegExp(`^"${IDSTRING}_${MFIELD}"$`), // matches a QUOTED property name (as text)
-			SKEY_RE: new RegExp(`^"${IDSTRING}_${SFIELD}"$`), // matches a QUOTED property name (as text)
+			MKEY_RE: new RegExp(`^"${IDSTRING}_${MFIELD}"$`),
+			SKEY_RE: new RegExp(`^"${IDSTRING}_${SFIELD}"$`), 
 
 			// Unquoted variants (objects parsed by JS have unquoted property names)
 			MKEY_UNQUOTED_RE: new RegExp(`^${IDSTRING}_${MFIELD}$`),
