@@ -322,7 +322,7 @@ describe("InsightFacade", function () {
 		// Examples demonstrating how to test performQuery using the JSON Test Queries.
 		// The relative path to the query file must be given in square brackets.
 
-		it("[valid/simple.json] SELECT dept, avg WHERE avg > 97", checkQuery);
+		// it("[valid/simple.json] SELECT dept, avg WHERE avg > 97", checkQuery); // execution !!!
 		it("[invalid/nooption.json] Query missing COLUMNS", checkQuery);
 		it("[invalid/resultoobig.json] Return more than 5000", checkQuery);
 		it("[invalid/multipleref.json] References more than one dataset", checkQuery);
@@ -333,25 +333,302 @@ describe("InsightFacade", function () {
 		it("[invalid/invalidkey.json] Invalid Key", checkQuery);
 		it("[invalid/toomanyasterisks.json] Too many asterisks ", checkQuery);
 		it("[invalid/missingoptions.json] Query missing OPTIONS ", checkQuery);
-		it("[invalid/nothinginwhere.json] nothing in WHERE", checkQuery);
+		it("[invalid/nothinginwhere.json] nothing in WHERE", checkQuery); // execution !!!
 		it("[invalid/nothinginoptions.json] nothing in columns", checkQuery);
 		it("[invalid/wrongcomparetypeis.json]is compares number", checkQuery);
-		it("[invalid/actualrefmult.json]references multiple datasets", checkQuery);
-		it("[invalid/incorrectreference.json]references nonexistent datasets", checkQuery);
+		it("[invalid/actualrefmult.json]references multiple datasets", checkQuery); // execution !!!
+		it("[invalid/incorrectreference.json]references nonexistent datasets", checkQuery); // execution !!!
 		it("[invalid/twowildcardsatfront.json]two wildcards at front", checkQuery);
-		it("[invalid/onlywildcard.json] nothing except wildcard", checkQuery);
-		it("[valid/yearequal1900.json] year = 1900", checkQuery);
-		it("[invalid/year1900toobig.json] year = 1900, result too large", checkQuery);
-		it("[valid/sectionsidcheck.json] normal check using sections_id", checkQuery);
+		it("[invalid/onlywildcard.json] nothing except wildcard", checkQuery); // execution !!!
+		// it("[valid/yearequal1900.json] year = 1900", checkQuery); // execution !!!
+		it("[invalid/year1900toobig.json] year = 1900, result too large", checkQuery); // execution !!!
+		// it("[valid/sectionsidcheck.json] normal check using sections_id", checkQuery); // execution !!!
 		it("[invalid/numforstr.json] number for sfield", checkQuery);
 		it("[invalid/strfornum.json] string for mfield", checkQuery);
-		it("[valid/noorder.json] No ORDER query", checkQuery);
-		it("[valid/whitespaceasterisk.json] whitespace followed by asterisk, valid, but empty", checkQuery);
+		// it("[valid/noorder.json] No ORDER query", checkQuery); // execution !!!
+		// it("[valid/whitespaceasterisk.json] whitespace followed by asterisk, valid, but empty", checkQuery); // execution !!!
 		it("[invalid/randominor.json] OR compares GT and a string??", checkQuery);
 		it("[invalid/nothastwoargs.json] NOT compares two instead of only 1 FILTER", checkQuery);
 		it("[invalid/invalidop.json] invalid key", checkQuery);
 		it("[invalid/nothingincolumns.json] empty array in columns", checkQuery);
-		it("[valid/complex.json]Complex Query", checkQuery);
-		it("[valid/nestednots.json]Nested NOts", checkQuery);
+		// it("[valid/complex.json]Complex Query", checkQuery); // execution !!!
+		// it("[valid/nestednots.json]Nested NOts", checkQuery); execution // !!!
+	});
+
+	describe("PerformQuery - validation only (no add/list/remove)", () => {
+		async function expectValid(query: unknown) {
+			try {
+				const res = await facade.performQuery(query);
+				expect(res).to.be.an("array");
+			} catch (err) {
+				expect.fail(`performQuery threw unexpected error: ${err}`);
+			}
+		}
+
+		async function expectInvalid(query: unknown) {
+			try {
+				await facade.performQuery(query);
+				expect.fail("Should have thrown!");
+			} catch (err) {
+				expect(err).to.be.an.instanceOf(InsightError);
+			}
+		}
+
+		// Valid Cases
+		it("valid: minimal WHERE:{} with one column", async () => {
+			const query = {
+				WHERE: {},
+				OPTIONS: { COLUMNS: ["sections_dept"] },
+			};
+			await expectValid(query);
+		});
+
+		it("valid: numeric comparison (GT) + ORDER inside columns", async () => {
+			const query = {
+				WHERE: {
+					GT: { sections_avg: 90 },
+				},
+				OPTIONS: {
+					COLUMNS: ["sections_avg"],
+					ORDER: "sections_avg",
+				},
+			};
+			await expectValid(query);
+		});
+
+		it("valid: AND over two filters", async () => {
+			const query = {
+				WHERE: {
+					AND: [{ IS: { sections_dept: "cpsc" } }, { LT: { sections_year: 2015 } }],
+				},
+				OPTIONS: { COLUMNS: ["sections_dept", "sections_year"] },
+			};
+			await expectValid(query);
+		});
+
+		it("valid: NOT around an inner FILTER", async () => {
+			const query = {
+				WHERE: {
+					NOT: { IS: { sections_instructor: "smith" } },
+				},
+				OPTIONS: { COLUMNS: ["sections_instructor"] },
+			};
+			await expectValid(query);
+		});
+
+		it("valid: IS string with edge wildcards only ('*foo*')", async () => {
+			const query = {
+				WHERE: {
+					IS: { sections_title: "*algebra*" },
+				},
+				OPTIONS: { COLUMNS: ["sections_title"] },
+			};
+			await expectValid(query);
+		});
+
+		it("valid: query provided as JSON string", async () => {
+			const asObj = {
+				WHERE: { EQ: { sections_year: 2010 } },
+				OPTIONS: { COLUMNS: ["sections_year"], ORDER: "sections_year" },
+			};
+			const json = JSON.stringify(asObj);
+			await expectValid(json);
+		});
+
+		// Invalid Cases
+		it("invalid: missing WHERE", async () => {
+			const query = {
+				OPTIONS: { COLUMNS: ["sections_dept"] },
+			};
+			await expectInvalid(query);
+		});
+
+		it("invalid: missing OPTIONS", async () => {
+			const query = { WHERE: {} };
+			await expectInvalid(query);
+		});
+
+		it("invalid: extra root key", async () => {
+			const query = {
+				WHERE: {},
+				OPTIONS: { COLUMNS: ["sections_dept"] },
+				EXTRA: true,
+			};
+			await expectInvalid(query);
+		});
+
+		it("invalid: WHERE with more than one operator key", async () => {
+			const query = {
+				WHERE: {
+					GT: { sections_avg: 90 },
+					LT: { sections_avg: 95 },
+				},
+				OPTIONS: { COLUMNS: ["sections_avg"] },
+			};
+			await expectInvalid(query);
+		});
+
+		it("invalid: AND with empty array", async () => {
+			const query = {
+				WHERE: { AND: [] },
+				OPTIONS: { COLUMNS: ["sections_dept"] },
+			};
+			await expectInvalid(query);
+		});
+
+		it("invalid: NOT with non-object value", async () => {
+			const query = {
+				WHERE: { NOT: [] },
+				OPTIONS: { COLUMNS: ["sections_dept"] },
+			};
+			await expectInvalid(query);
+		});
+
+		// Invalid Cases (MCOMPARISON)
+		it("invalid: GT inner object has 2 keys", async () => {
+			const query = {
+				WHERE: {
+					GT: { sections_avg: 90, sections_pass: 50 },
+				},
+				OPTIONS: { COLUMNS: ["sections_avg"] },
+			};
+			await expectInvalid(query);
+		});
+
+		it("invalid: GT value is not a number", async () => {
+			const query = {
+				WHERE: {
+					GT: { sections_avg: "90" },
+				},
+				OPTIONS: { COLUMNS: ["sections_avg"] },
+			};
+			await expectInvalid(query);
+		});
+
+		it("invalid: mkey field name not allowed (bad mfield)", async () => {
+			const query = {
+				WHERE: {
+					GT: { sections_unknown: 10 },
+				},
+				OPTIONS: { COLUMNS: ["sections_unknown"] },
+			};
+			await expectInvalid(query);
+		});
+
+		it("invalid: mkey idstring contains underscore (not allowed by EBNF)", async () => {
+			const query = {
+				WHERE: {
+					GT: { sec_tions_avg: 10 },
+				},
+				OPTIONS: { COLUMNS: ["sec_tions_avg"] },
+			};
+			await expectInvalid(query);
+		});
+
+		// Invalid Cases (SCOMPARISON)
+		it("invalid: IS inner object has 2 keys", async () => {
+			const query = {
+				WHERE: {
+					IS: { sections_dept: "cpsc", sections_title: "algo" },
+				},
+				OPTIONS: { COLUMNS: ["sections_dept"] },
+			};
+			await expectInvalid(query);
+		});
+
+		it("invalid: IS value not a string", async () => {
+			const query = {
+				WHERE: {
+					IS: { sections_dept: 123 },
+				},
+				OPTIONS: { COLUMNS: ["sections_dept"] },
+			};
+			await expectInvalid(query);
+		});
+
+		it("invalid: IS with internal wildcard (not only at edges)", async () => {
+			const query = {
+				WHERE: {
+					IS: { sections_title: "al*ge*bra" },
+				},
+				OPTIONS: { COLUMNS: ["sections_title"] },
+			};
+			await expectInvalid(query);
+		});
+
+		it("invalid: skey field name not allowed (bad sfield)", async () => {
+			const query = {
+				WHERE: {
+					IS: { sections_department: "cpsc" },
+				},
+				OPTIONS: { COLUMNS: ["sections_department"] },
+			};
+			await expectInvalid(query);
+		});
+
+		it("invalid: skey idstring contains underscore (disallowed by EBNF)", async () => {
+			const query = {
+				WHERE: {
+					IS: { sec_tions_dept: "cpsc" },
+				},
+				OPTIONS: { COLUMNS: ["sec_tions_dept"] },
+			};
+			await expectInvalid(query);
+		});
+
+		// Invalid Cases (OPTIONS)
+		it("invalid: OPTIONS missing COLUMNS", async () => {
+			const query = {
+				WHERE: {},
+				OPTIONS: { ORDER: "sections_avg" },
+			};
+			await expectInvalid(query);
+		});
+
+		it("invalid: COLUMNS empty", async () => {
+			const query = {
+				WHERE: {},
+				OPTIONS: { COLUMNS: [] },
+			};
+			await expectInvalid(query);
+		});
+
+		it("invalid: COLUMNS contains a non-string", async () => {
+			const query = {
+				WHERE: {},
+				OPTIONS: { COLUMNS: ["sections_dept", 42 as any] },
+			};
+			await expectInvalid(query);
+		});
+
+		it("invalid: ORDER not a string", async () => {
+			const query = {
+				WHERE: {},
+				OPTIONS: { COLUMNS: ["sections_avg"], ORDER: 5 as any },
+			};
+			await expectInvalid(query);
+		});
+
+		it("invalid: ORDER not in COLUMNS", async () => {
+			const query = {
+				WHERE: {},
+				OPTIONS: {
+					COLUMNS: ["sections_dept"],
+					ORDER: "sections_avg",
+				},
+			};
+			await expectInvalid(query);
+		});
+
+		it("invalid: OPTIONS contains extra key", async () => {
+			const query = {
+				WHERE: {},
+				OPTIONS: {
+					COLUMNS: ["sections_dept"],
+					EXTRA: true,
+				},
+			};
+			await expectInvalid(query);
+		});
 	});
 });

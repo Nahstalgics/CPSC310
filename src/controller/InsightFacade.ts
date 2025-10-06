@@ -1,7 +1,8 @@
 import { IInsightFacade, InsightDataset, InsightDatasetKind, InsightResult, InsightError } from "./IInsightFacade";
 import JSZip from "jszip";
+import * as fs from "fs-extra";
 
-interface Section {
+export interface Section {
 	uuid: string;
 	id: string;
 	title: string;
@@ -14,7 +15,7 @@ interface Section {
 	audit: number;
 }
 
-interface GrammarConfig {
+export interface GrammarConfig {
 	LOGICS: Set<string>;
 	NEGATION: string;
 	NUM_CMPS: Set<string>;
@@ -30,6 +31,8 @@ interface GrammarConfig {
  * Method documentation is in IInsightFacade
  *
  */
+export type InsightDatasetExtend = InsightDataset & { sections: Section[] };
+
 export default class InsightFacade implements IInsightFacade {
 	private readonly cfg: GrammarConfig = InsightFacade.makeDefaultConfig(); // one config per instance
 
@@ -50,7 +53,7 @@ export default class InsightFacade implements IInsightFacade {
 			// matches a QUOTED property name (as text)
 			// RegExp() describes a text pattern you can use to test, search, or extract strings
 			MKEY_RE: new RegExp(`^"${IDSTRING}_${MFIELD}"$`),
-			SKEY_RE: new RegExp(`^"${IDSTRING}_${SFIELD}"$`), 
+			SKEY_RE: new RegExp(`^"${IDSTRING}_${SFIELD}"$`),
 
 			// Unquoted variants (objects parsed by JS have unquoted property names)
 			MKEY_UNQUOTED_RE: new RegExp(`^${IDSTRING}_${MFIELD}$`),
@@ -58,30 +61,112 @@ export default class InsightFacade implements IInsightFacade {
 		};
 	}
 
+	// copied Colins addDataset
 	private idValid(id: string): boolean {
 		return !(id.includes("_") || id.trim().length === 0);
 	}
 
-	private async parseSections(content: string) /* idk what it'll return yet */ {
-		const sections: Section[] = [];
+	private parseSection(section: any): Section {
+		return {
+			uuid: String(section.id),
+			id: section.course,
+			title: section.title,
+			instructor: section.instructor,
+			dept: section.dept,
+			year: Number(section.year),
+			avg: Number(section.avg),
+			pass: Number(section.pass),
+			fail: Number(section.fail),
+			audit: Number(section.audit),
+		};
+	}
+
+	private async parseSections(content: string): Promise<Section[]> /* idk what it'll return yet */ {
+		const sections: Section[] = []; // empty list of sections
+		const unparsedSections: Promise<string>[] = [];
 		const zip = new JSZip();
-		const file = await zip.loadAsync(content);
-		const courses = zip.folder("courses");
-		if (!courses) {
-			throw new InsightError("Does not contain courses folder");
+		try {
+			const fileLoad = await zip.loadAsync(content, { base64: true }); // load content into file
+			const courses = fileLoad.folder("courses"); // check if the loaded content has a folder named courses.
+			if (courses === null) {
+				throw new InsightError("Does not contain courses folder");
+			}
+			for (const file of Object.values(courses.files)) {
+				const fileContent = file.async("string");
+				unparsedSections.push(fileContent);
+			}
+		} catch {
+			throw new InsightError("Unable to process");
 		}
+		let parsedSections: string[];
+		try {
+			parsedSections = await Promise.all(unparsedSections);
+		} catch {
+			throw new InsightError("IDK");
+		}
+		for (const raw of parsedSections) {
+			try {
+				const json = JSON.parse(raw);
+				if (Array.isArray(json.result)) {
+					for (const section of json.result) {
+						// map raw object to Section
+						const oneSection: Section = this.parseSection(section); // method would've been too long
+						sections.push(oneSection);
+					}
+				}
+			} catch {
+				// ignore bad JSON files
+				continue;
+			}
+		}
+		return sections;
 	}
 
 	public async addDataset(id: string, content: string, kind: InsightDatasetKind): Promise<string[]> {
+		if (!this.idValid(id)) {
+			throw new InsightError("Invalid id string");
+		}
+		let allDatasets;
+		try {
+			if (await fs.pathExists("./data/allDatasets.json")) {
+				allDatasets = await fs.readJson("./data/allDatasets.json");
+			} else {
+				await fs.ensureDir("./data");
+				allDatasets = [];
+			}
+		} catch {
+			throw new InsightError("Unable to read JSON");
+		}
 		if (kind === InsightDatasetKind.Sections) {
+			let dataset: Section[];
+			try {
+				dataset = await this.parseSections(content);
+			} catch {
+				throw new InsightError("");
+			}
+			const insightDataset: InsightDatasetExtend = {
+				id: id,
+				kind: InsightDatasetKind.Sections,
+				numRows: dataset.length,
+				sections: dataset,
+			};
+			if (dataset.length === 0) {
+				throw new InsightError("Dataset contained no valid sections");
+			}
+			allDatasets.push(insightDataset);
+			try {
+				await fs.outputJSON("./data/allDatasets.json", allDatasets);
+			} catch {
+				throw new InsightError();
+			}
+			const datasetResults: string[] = [];
+			for (const data of allDatasets) {
+				datasetResults.push(data.id);
+			}
+			return datasetResults;
 		} else {
 			throw new InsightError("Invalid InsightDatasetKind");
 		}
-
-		//remove later
-		throw new Error(
-			`InsightFacadeImpl::addDataset() is unimplemented! - id=${id}; content=${content?.length}; kind=${kind}`
-		);
 	}
 
 	public async removeDataset(id: string): Promise<string> {
