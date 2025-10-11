@@ -211,6 +211,9 @@ export default class InsightFacade implements IInsightFacade {
 	3 execute the query */
 	public async performQuery(query: unknown): Promise<InsightResult[]> {
 		// addDataset = process zip files into array of Sections
+		// read from ./data/allDatasets.json
+		// when read in, they come as an InsightDatasetExtend 
+		// InsightDataset from IInsightFacade plus extra array of all sections
 
 		let parsed: unknown;
 
@@ -219,7 +222,7 @@ export default class InsightFacade implements IInsightFacade {
 			try {
 				parsed = JSON.parse(query);
 			} catch {
-				throw new InsightError("performQuery: invalid JSON string provided"); // !!!
+				throw new InsightError("performQuery: invalid JSON string provided"); 
 			}
 		} else {
 			parsed = query; // query alr obj
@@ -232,13 +235,150 @@ export default class InsightFacade implements IInsightFacade {
 			OPTIONS: { COLUMNS: string[]; ORDER?: string };
 		};
 
-		// TODO !!! -- implement evaluation query
-		//	1) Evaluate q.WHERE against your dataset (AND/OR/NOT/LT/GT/EQ/IS)
-		//	2) Project columns in q.OPTIONS.COLUMNS
-		//	3) Sort by q.OPTIONS.ORDER if provided
+		// TODO !!! -- implement executing query
+
+		//  1) Loads the rows of the referenced dataset (from ./data/allDatasets.json)
+		const allDatasets = await this.loadAllDatasets(); 
+		const datasetId = this.getDatasetIdFromQuery(wellFormedQuery); 
+		const dataset = allDatasets.find(d => d.id === datasetId);
+		if (!dataset) throw new InsightError(`Dataset '${datasetId}' not found`);
+
+		//	2) Evaluate q.WHERE against your dataset (AND/OR/NOT/LT/GT/EQ/IS) 
+		const filtered = dataset.sections.filter((row) => this.evalWhere(wellFormedQuery.WHERE, row)); 
+
+		//	3) Project columns in q.OPTIONS.COLUMNS
+		const projected = this.projectRows(filtered, wellFormedQuery.OPTIONS.COLUMNS);
+
+		//	4) Sort by q.OPTIONS.ORDER if provided
+		//	5) Returns InsightResult[] 
 
 		return [{ result: "example " }] as InsightResult[]; // so doesn't throw error
 	}
+
+	// ===== Execution Helpers =====
+	private async loadAllDatasets(metaPath = "./data/allDatasets.json"): Promise<InsightDatasetExtend[]> {
+		if (await fs.pathExists(metaPath)) {
+			try {
+				return await fs.readJson(metaPath); 
+			} catch {
+				throw new InsightError("performQuery: unable to read dataset"); 
+			}
+		}
+		return []; 
+	}
+
+	private getDatasetIdFromQuery(query: { WHERE: unknown; OPTIONS: { COLUMNS: string[]; ORDER?: string } }): string {
+		// first COLUMN key 
+		const idFromColumns = this.splitKey(query.OPTIONS.COLUMNS[0]).id;
+		return idFromColumns; 
+	}
+
+	private splitKey(key: string): { id: string; field: string } {
+		const idx = key.indexOf("_");
+		if (idx < 0) throw new InsightError(`Bad key '${key}' (expected "<id>_<field>")`);
+		return { id: key.slice(0, idx), field: key.slice(idx + 1) }; 
+	}
+
+	// eval where recursively for one row
+	private evalWhere(node: unknown, row: Section): boolean {
+		if (node && typeof node === "object" && !Array.isArray(node) && Object.keys(node as any).length === 0) {
+			return true; 
+		}
+		if (!node || typeof node !== "object" || Array.isArray(node)) {
+			throw new InsightError("WHERE: expected object"); 
+		}
+
+		const obj = node as Record<string, unknown>; 
+		const keys = Object.keys(obj); 
+		if (keys.length !== 1) {
+			throw new InsightError("WHERE must have exactly one key (AND/OR/NOT/LT/GT/EQ/IS)");
+		}
+
+		const key = keys[0]; 
+
+		if (key === "NOT") {
+			return !this.evalWhere(obj[key], row); 
+		}
+
+		if (key === "AND" || key === "OR") {
+			const arr = obj[key]; 
+			if (!Array.isArray(arr) || arr.length === 0) {
+				throw new InsightError(`${key}: must be a non-empty array of FILTER`)
+			}
+			const results = (arr as unknown[]).map((c) => this.evalWhere(c, row));
+			return key === "AND" ? results.every(Boolean) : results.some(Boolean);
+		}
+
+		if (key === "LT" || key === "GT" || key === "EQ") {
+			const inner = obj[key];
+			if (!inner || typeof inner !== "object" || Array.isArray(inner)) {
+				throw new InsightError(`${key}: expected object`); 
+			}
+			const innerKeys = Object.keys(inner as Record<string, unknown>);
+			if (innerKeys.length !== 1) {
+				throw new InsightError(`${key}: must have exactly one mkey:number`); 
+			}
+			const mkey = innerKeys[0]; 
+			const cmpVal = (inner as any)[mkey];
+			if (typeof cmpVal !== "number" || Number.isNaN(cmpVal)) {
+				throw new InsightError(`${key}.${mkey}: value must be a number`);
+			}
+			const v = this.getValue(row, mkey);
+			if (typeof v !== "number" || Number.isNaN(v)) return false; 
+			if (key === "LT") return v < cmpVal; 
+			if (key === "GT") return v > cmpVal;
+			return v === cmpVal; // EQ
+		}
+
+		if (key === "IS") {
+			const inner = obj[key]; 
+			if (!inner || typeof inner !== "object" || Array.isArray(inner)) {
+				throw new InsightError("IS: expected object");
+			}
+			const innerKeys = Object.keys(inner as Record<string, unknown>); 
+			if (innerKeys.length !== 1) {
+				throw new InsightError("IS: must have exactly one skey:string");
+			}
+			const skey = innerKeys[0];
+			const pat = (inner as any)[skey];
+			if (typeof pat !== "string") {
+				throw new InsightError(`IS.${skey}: value must be a string`); 
+			}
+			const val = this.getValue(row, skey);
+			return typeof val === "string" && this.matchesIS(val, pat); 
+		}
+
+		throw new InsightError(`Unknown operator '${key}'`);
+	}
+
+	// Map "<id>_<field>" to the row value
+	private getValue(row: Section, key: string): string | number | undefined {
+		const { field } = this.splitKey(key);
+		return (row as any)[field];
+	}
+
+	private matchesIS(value: string, pattern: string): boolean {
+		if (pattern.startsWith("*") && pattern.endsWith("*")) {
+			return value.includes(pattern.slice(1, -1));
+		} else if (pattern.startsWith("*")) {
+			return value.endsWith(pattern.slice(1)); 
+		} else if (pattern.endsWith("*")) {
+			return value.startsWith(pattern.slice(0, -1)); 
+		}
+		return value === pattern; 
+	}
+
+	private projectRows(rows: Section[], columns: string[]): InsightResult[] {
+		return rows.map((r) => {
+			const out: InsightResult = {}; 
+			for (const col of columns) {
+				(out as any)[col] = this.getValue(r, col);
+			}
+			return out;
+		});
+	}
+
+	// ===== Validation =====
 
 	private async validateQuery(query: unknown): Promise<void> {
 		this.assertObj(query, "$");
@@ -421,7 +561,7 @@ export default class InsightFacade implements IInsightFacade {
 		}
 	}
 
-	// ===== Helpers =====
+	// ===== Validation Helpers =====
 	// inputstring (for IS): zero or more non-* chars; allow optional leading and/or trailing '*'
 	private isValidISPattern(s: unknown): s is string {
 		if (typeof s !== "string") return false;
