@@ -357,7 +357,7 @@ describe("InsightFacade", function () {
 	});
 
 	describe("PerformQuery - validation only (no add/list/remove)", () => {
-		async function expectValid(query: unknown) {
+		async function expectValid(query: unknown): Promise<void> {
 			try {
 				const res = await facade.performQuery(query);
 				expect(res).to.be.an("array");
@@ -366,7 +366,7 @@ describe("InsightFacade", function () {
 			}
 		}
 
-		async function expectInvalid(query: unknown) {
+		async function expectInvalid(query: unknown): Promise<void> {
 			try {
 				await facade.performQuery(query);
 				expect.fail("Should have thrown!");

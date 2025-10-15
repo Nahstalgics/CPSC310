@@ -6,39 +6,17 @@ import {
 	InsightError,
 	ResultTooLargeError,
 } from "./IInsightFacade";
+import { validateQuery } from "./query/validator";
+import { isPlainEmptyObject, collectDatasetIds, evalWhere, projectRows, sortResults } from "./query/executor";
+import type { GrammarConfig, InsightDatasetExtend, Section } from "./query/types";
 import JSZip from "jszip";
 import * as fs from "fs-extra";
-
-export interface Section {
-	uuid: string;
-	id: string;
-	title: string;
-	instructor: string;
-	dept: string;
-	year: number;
-	avg: number;
-	pass: number;
-	fail: number;
-	audit: number;
-}
-
-export interface GrammarConfig {
-	LOGICS: Set<string>;
-	NEGATION: string;
-	NUM_CMPS: Set<string>;
-	STR_CMPS: Set<string>;
-	MKEY_RE: RegExp;
-	SKEY_RE: RegExp;
-	MKEY_UNQUOTED_RE: RegExp;
-	SKEY_UNQUOTED_RE: RegExp;
-}
 
 /**
  * This is the main programmatic entry point for the project.
  * Method documentation is in IInsightFacade
  *
  */
-export type InsightDatasetExtend = InsightDataset & { sections: Section[] };
 
 export default class InsightFacade implements IInsightFacade {
 	private readonly cfg: GrammarConfig = InsightFacade.makeDefaultConfig(); // one config per instance
@@ -240,23 +218,19 @@ export default class InsightFacade implements IInsightFacade {
 			parsed = query; // query alr obj
 		}
 
-		await this.validateQuery(parsed);
+		// await this.validateQuery(parsed);
+		await validateQuery(parsed, this.cfg);
 
-		const wellFormedQuery = parsed as {
-			WHERE: unknown;
-			OPTIONS: { COLUMNS: string[]; ORDER?: string };
-		};
+		const wellFormedQuery = parsed as { WHERE: unknown; OPTIONS: { COLUMNS: string[]; ORDER?: string } };
 
 		// TODO !!! -- implement executing query
 
-		const ids = this.collectDatasetIds(wellFormedQuery);
-		if (ids.size !== 1) {
-			throw new InsightError("Query references multiple datasets");
-		}
+		const ids = collectDatasetIds(wellFormedQuery);
+		if (ids.size !== 1) throw new InsightError("Query references multiple datasets");
 
 		const datasetId = [...ids][0];
 
-		//  1) Loads the rows of the referenced dataset (from ./data/allDatasets.json)
+		// 1) Loads the rows of the referenced dataset
 		const allDatasets = await this.loadAllDatasets();
 		const dataset = allDatasets.find((d) => d.id === datasetId);
 		if (!dataset) throw new InsightError(`Dataset '${datasetId}' not found`);
@@ -265,31 +239,28 @@ export default class InsightFacade implements IInsightFacade {
 		const maxOutput = 5000;
 
 		const rowsToFilter = dataset.sections;
-		if (this.isPlainEmptyObject(wellFormedQuery.WHERE) && rowsToFilter.length >= maxOutput) {
+		if (isPlainEmptyObject(wellFormedQuery.WHERE) && rowsToFilter.length >= maxOutput) {
 			throw new ResultTooLargeError();
 		}
 
-		const filtered = this.isPlainEmptyObject(wellFormedQuery.WHERE)
+		const filtered = isPlainEmptyObject(wellFormedQuery.WHERE)
 			? rowsToFilter
-			: rowsToFilter.filter((row) => this.evalWhere(wellFormedQuery.WHERE, row));
+			: rowsToFilter.filter((row) => evalWhere(wellFormedQuery.WHERE, row));
 
-		//	3) Project columns in q.OPTIONS.COLUMNS
-		const projected = this.projectRows(filtered, wellFormedQuery.OPTIONS.COLUMNS);
+		// 3) Project columns in q.OPTIONS.COLUMNS
+		const projected = projectRows(filtered, wellFormedQuery.OPTIONS.COLUMNS);
 
-		//	4) Enforce 5000 cap on final output
+		// 4) Enforce 5000 cap on final output
 		this.enforceResultCap(projected, maxOutput);
 
-		//	4) Sort by q.OPTIONS.ORDER if provided
-		const sorted = this.sortResults(projected, wellFormedQuery.OPTIONS.ORDER);
+		// 5) Sort by q.OPTIONS.ORDER if provided
+		const sorted = sortResults(projected, wellFormedQuery.OPTIONS.ORDER);
 
-		//	5) Returns InsightResult[]
+		// 6) Returns InsightResult[]
 		return sorted;
 	}
 
 	// ===== Execution Helpers =====
-	private isPlainEmptyObject(obj: unknown): boolean {
-		return !!obj && typeof obj === "object" && !Array.isArray(obj) && Object.keys(obj as any).length === 0;
-	}
 
 	private enforceResultCap<T>(rows: T[], cap = 5000): T[] {
 		if (rows.length >= cap) {
@@ -307,405 +278,6 @@ export default class InsightFacade implements IInsightFacade {
 			}
 		}
 		return [];
-	}
-
-	private splitKey(key: string): { id: string; field: string } {
-		const idx = key.indexOf("_");
-		if (idx < 0) throw new InsightError(`Bad key '${key}' (expected "<id>_<field>")`);
-		return { id: key.slice(0, idx), field: key.slice(idx + 1) };
-	}
-
-	private collectIdsFromWhere(node: unknown, out: Set<string>): void {
-		if (node && typeof node === "object" && !Array.isArray(node) && Object.keys(node as any).length === 0) {
-			// WHERE: {}
-			return;
-		}
-		if (!node || typeof node !== "object" || Array.isArray(node)) {
-			throw new InsightError("WHERE: expected object");
-		}
-
-		const obj = node as Record<string, unknown>;
-		const keys = Object.keys(obj);
-		if (keys.length !== 1) {
-			throw new InsightError("WHERE must have exactly one key (AND/OR/NOT/LT/GT/EQ/IS)");
-		}
-
-		const key = keys[0];
-
-		if (key === "NOT") {
-			this.collectIdsFromWhere(obj[key], out);
-			return;
-		}
-		if (key === "AND" || key === "OR") {
-			const arr = obj[key];
-			if (!Array.isArray(arr) || arr.length == 0) {
-				throw new InsightError(`${key}: must be a non-empty array of FILTER`);
-			}
-			for (const child of arr) this.collectIdsFromWhere(child, out);
-			return;
-		}
-		if (key === "LT" || key === "GT" || key === "EQ" || key === "IS") {
-			const inner = obj[key] as Record<string, unknown>;
-			const innerKeys = Object.keys(inner);
-			if (innerKeys.length !== 1) {
-				throw new InsightError(`${key}: must have exactly one key`);
-			}
-			const leafKey = innerKeys[0]; // eg. "sections_avg" or "sections_dept"
-			out.add(this.splitKey(leafKey).id);
-			return;
-		}
-		throw new InsightError(`Unknown operator '${key}'`);
-	}
-
-	private collectDatasetIds(query: { WHERE: unknown; OPTIONS: { COLUMNS: string[]; ORDER?: string } }): Set<string> {
-		const ids = new Set<string>();
-		for (const col of query.OPTIONS.COLUMNS) ids.add(this.splitKey(col).id);
-		if (query.OPTIONS.ORDER) ids.add(this.splitKey(query.OPTIONS.ORDER).id);
-		this.collectIdsFromWhere(query.WHERE, ids);
-		return ids;
-	}
-
-	// eval where recursively for one row
-	private evalWhere(node: unknown, row: Section): boolean {
-		if (node && typeof node === "object" && !Array.isArray(node) && Object.keys(node as any).length === 0) {
-			return true;
-		}
-		if (!node || typeof node !== "object" || Array.isArray(node)) {
-			throw new InsightError("WHERE: expected object");
-		}
-
-		const obj = node as Record<string, unknown>;
-		const keys = Object.keys(obj);
-		const key = keys[0];
-
-		if (keys.length !== 1) {
-			throw new InsightError("WHERE must have exactly one key (AND/OR/NOT/LT/GT/EQ/IS)");
-		}
-
-		if (key === "NOT") {
-			return !this.evalWhere(obj[key], row);
-		}
-
-		if (key === "AND" || key === "OR") {
-			const arr = obj[key];
-			if (!Array.isArray(arr) || arr.length === 0) {
-				throw new InsightError(`${key}: must be a non-empty array of FILTER`);
-			}
-			const results = (arr as unknown[]).map((c) => this.evalWhere(c, row));
-			return key === "AND" ? results.every(Boolean) : results.some(Boolean);
-		}
-
-		if (key === "LT" || key === "GT" || key === "EQ") {
-			const inner = obj[key];
-			if (!inner || typeof inner !== "object" || Array.isArray(inner)) {
-				throw new InsightError(`${key}: expected object`);
-			}
-			const innerKeys = Object.keys(inner as Record<string, unknown>);
-			if (innerKeys.length !== 1) {
-				throw new InsightError(`${key}: must have exactly one mkey:number`);
-			}
-			const mkey = innerKeys[0];
-			const cmpVal = (inner as any)[mkey];
-			if (typeof cmpVal !== "number" || Number.isNaN(cmpVal)) {
-				throw new InsightError(`${key}.${mkey}: value must be a number`);
-			}
-			const v = this.getValue(row, mkey);
-			if (typeof v !== "number" || Number.isNaN(v)) return false;
-			if (key === "LT") return v < cmpVal;
-			if (key === "GT") return v > cmpVal;
-			return v === cmpVal; // EQ
-		}
-
-		if (key === "IS") {
-			const inner = obj[key];
-			if (!inner || typeof inner !== "object" || Array.isArray(inner)) {
-				throw new InsightError("IS: expected object");
-			}
-			const innerKeys = Object.keys(inner as Record<string, unknown>);
-			if (innerKeys.length !== 1) {
-				throw new InsightError("IS: must have exactly one skey:string");
-			}
-			const skey = innerKeys[0];
-			const pat = (inner as any)[skey];
-			if (typeof pat !== "string") {
-				throw new InsightError(`IS.${skey}: value must be a string`);
-			}
-			const val = this.getValue(row, skey);
-			return typeof val === "string" && this.matchesIS(val, pat);
-		}
-
-		throw new InsightError(`Unknown operator '${key}'`);
-	}
-
-	// Map "<id>_<field>" to the row value
-	private getValue(row: Section, key: string): string | number | undefined {
-		const { field } = this.splitKey(key);
-		return (row as any)[field];
-	}
-
-	private matchesIS(value: string, pattern: string): boolean {
-		if (pattern.startsWith("*") && pattern.endsWith("*")) {
-			return value.includes(pattern.slice(1, -1));
-		} else if (pattern.startsWith("*")) {
-			return value.endsWith(pattern.slice(1));
-		} else if (pattern.endsWith("*")) {
-			return value.startsWith(pattern.slice(0, -1));
-		}
-		return value === pattern;
-	}
-
-	private projectRows(rows: Section[], columns: string[]): InsightResult[] {
-		return rows.map((r) => {
-			const out: InsightResult = {};
-			for (const col of columns) {
-				(out as any)[col] = this.getValue(r, col);
-			}
-			return out;
-		});
-	}
-
-	private sortResults(results: InsightResult[], orderKey?: string): InsightResult[] {
-		if (!orderKey) return results;
-		const arr = [...results];
-		arr.sort((a, b) => {
-			const va = a[orderKey];
-			const vb = b[orderKey];
-			if (typeof va === "number" && typeof vb === "number") return va - vb;
-			return String(va).localeCompare(String(vb));
-		});
-		return arr;
-	}
-
-	// ===== Validation =====
-
-	private async validateQuery(query: unknown): Promise<void> {
-		this.assertObj(query, "$");
-
-		const q = query as Record<string, unknown>;
-		const keys = Object.keys(q);
-
-		this.requireKeys(keys, ["WHERE", "OPTIONS"], "$"); // must have WHERE + OPTIONS
-		this.forbidExtra(keys, ["WHERE", "OPTIONS"], "$"); // no extra top-level keys
-
-		await this.validateWhere(q.WHERE, "$.WHERE"); // WHERE per FILTER rules
-		await this.validateOptions(q.OPTIONS, "$.OPTIONS"); // OPTIONS per grammar
-	}
-
-	// ===== WHERE validator (FILTER) =====
-
-	// FILTER ::= LOGICCOMPARISON | MCOMPARISON | SCOMPARISON | NEGATION
-	// LOGICCOMPARISON ::= LOGIC ':[' FILTER_LIST ']'
-	// NEGATION ::= 'NOT :{' FILTER '}'
-	// MCOMPARISON ::= MCOMPARATOR ':{' mkey ':' number '}'
-	// SCOMPARISON ::= 'IS:{' skey ': "' [*]? inputstring [*]? '" }'
-	// 		Asterisks at the beginning or end of the inputstring should act as wildcards.
-	private async validateWhere(node: unknown, path: string): Promise<void> {
-		if (this.isEmptyObject(node)) return; // empty WHERE:{} is valid
-
-		this.assertObj(node, path); // WHERE must be an obj when not empty
-		const obj = node as Record<string, unknown>;
-		const keys = Object.keys(obj);
-		const key = keys[0];
-
-		if (keys.length !== 1) {
-			// FILTER must have exactly 1 operator by design
-			throw new InsightError(`${path}: WHERE must have exactly one key (AND/OR/NOT/LT/GT/EQ/IS)`);
-		}
-
-		// ------ NEGATION ------
-		// NEGATION ::= 'NOT :{' FILTER '}'
-		if (key === this.cfg.NEGATION) {
-			// Value must be an object representing a single FILTER node.
-			await this.validateWhere(obj[key], `${path}.NOT`);
-			return;
-		}
-
-		// ------ LOGIC ------
-		// LOGICCOMPARISON ::= LOGIC ':[' FILTER_LIST ']'
-		// FILTER_LIST must contain at least one FILTER (non-empty array)
-		if (this.cfg.LOGICS.has(key)) {
-			// AND/OR
-			const arr = obj[key];
-			if (!Array.isArray(arr) || arr.length === 0) {
-				throw new InsightError(`${path}.${key}: must be a non-empty array of FILTER`);
-			}
-
-			const validations = arr.map(async (child, i) => this.validateWhere(child, `${path}.${key}[${i}]`));
-			await Promise.all(validations);
-
-			return;
-		}
-
-		// ------- MCOMPARISON ------
-		// MCOMPARISON ::= MCOMPARATOR ':{' mkey ':' number '}'
-		// key is one of {LT, GT, EQ}. The value must be an object with exactly one numeric property.
-		if (this.cfg.NUM_CMPS.has(key)) {
-			this.validateMComparison(obj[key], `${path}.${key}`);
-			return;
-		}
-
-		// ------ SCOMPARISON ------
-		// SCOMPARISON ::= 'IS:{' skey ': "' [*]? inputstring [*]? '" }'
-		// key === 'IS'. The value must be an object with exactly one string property.
-		if (this.cfg.STR_CMPS.has(key)) {
-			this.validateSComparison(obj[key], `${path}.IS`);
-			return;
-		}
-
-		// Any other operator name is illegal per EBNF
-		throw new InsightError(`${path}: unknown operator '${key}'`);
-	}
-
-	// ===== OPTIONS Validation =====
-	// OPTIONS ::= 'OPTIONS:{' COLUMNS '}' | 'OPTIONS:{' COLUMNS ', ORDER:' key '}'
-	private async validateOptions(node: unknown, path: string): Promise<void> {
-		this.assertObj(node, path);
-		const obj = node as Record<string, unknown>;
-		const keys = Object.keys(obj);
-
-		if (!("COLUMNS" in obj)) {
-			// COLUMNS is mandatory
-			throw new InsightError(`${path}: missing 'COLUMNS'`);
-		}
-
-		const columns = obj.COLUMNS;
-		if (!Array.isArray(columns) || columns.length === 0 || !columns.every(this.isString)) {
-			throw new InsightError(`${path}.COLUMNS must be a non-empty array of strings`);
-		}
-
-		if ("ORDER" in obj) {
-			if (!this.isString(obj.ORDER)) {
-				throw new InsightError(`${path}.ORDER must be a string`);
-			}
-			if (!columns.includes(obj.ORDER)) {
-				// must refrence one of the listed COLUMNS
-				throw new InsightError(`${path}.ORDER must be one of COLUMNS`);
-			}
-		}
-
-		this.forbidExtra(keys, ["COLUMNS", "ORDER"], path);
-	}
-
-	// ===== Leaf Validators =====
-	/** MCOMPARISON ::= MCOMPARATOR ':{' mkey ':' number '}'
-	 * - Inner value must be an object with exactly one property
-	 * - That property (mkey) must match "<idstring>_(avg|pass|fail|audit|year)"
-	 * - That value must be a finite number
-	 */
-	private validateMComparison(node: unknown, path: string): void {
-		this.assertObj(node, path);
-		const obj = node as Record<string, unknown>;
-		const keys = Object.keys(obj);
-
-		if (keys.length !== 1) {
-			throw new InsightError(`${path}: must have exactly one mkey: number`);
-		}
-
-		const mkey = keys[0];
-		const val = obj[mkey];
-
-		// STRICT mkey shape: allow either:
-		//	- QUOTED from (when treated as text), eg. "\"course_avg\"" matches MKEY_RE
-		//	- UNQUOTED frim (how JS stores object propert names), eg. "course_avg" matches MKEY_UNQUOTED_RE
-		const quoted = JSON.stringify(mkey);
-		const mkeyValid = this.cfg.MKEY_RE.test(quoted) || this.cfg.MKEY_UNQUOTED_RE.test(mkey);
-		if (!mkeyValid) {
-			throw new InsightError(`${path}: invalid mkey '${mkey}' 
-				(expected "<idstring>_<avg|pass|fail|audit|year>")`);
-		}
-
-		// Value must be a number and not a NaN (Not a Number)
-		if (typeof val !== "number" || Number.isNaN(val)) {
-			throw new InsightError(`${path}.${mkey}: value must be a number`);
-		}
-	}
-
-	/** SCOMPARISON ::= 'IS:{' skey ': "' [*]? inputstring [*]? '" }'
-	 * - Inner value must be an object with exactly one property
-	 * - That property (skey) must match "<idstring>_(dept|id|instructor|title|uuid)"
-	 * - That value must be a string
-	 * - '*' allowed only at the start and/or end (not inside)
-	 */
-	private validateSComparison(node: unknown, path: string): void {
-		this.assertObj(node, path);
-		const obj = node as Record<string, unknown>;
-		const keys = Object.keys(obj);
-
-		if (keys.length !== 1) {
-			throw new InsightError(`${path}: must have exactly one skey: string`);
-		}
-
-		const skey = keys[0];
-		const val = obj[skey];
-
-		// STRICT skey shape: support quoted and unquoted checks
-		const quoted = JSON.stringify(skey);
-		const skeyValid = this.cfg.SKEY_RE.test(quoted) || this.cfg.SKEY_UNQUOTED_RE.test(skey);
-		if (!skeyValid) {
-			throw new InsightError(`${path}: invalid skey '${skey}' 
-				(expected "<idstring>_<dept|id|instructor|title|uuid>")`);
-		}
-
-		if (!this.isString(val)) {
-			throw new InsightError(`${path}.${skey}: value must be a string`);
-		}
-
-		if (!this.isValidISPattern(val)) {
-			throw new InsightError(
-				`${path}.${skey}: IS value must have '*' only at start/end 
-				(examples: "foo", "*foo", "foo*", "*foo*")`
-			);
-		}
-	}
-
-	// ===== Validation Helpers =====
-	// inputstring (for IS): zero or more non-* chars; allow optional leading and/or trailing '*'
-	private isValidISPattern(s: unknown): s is string {
-		if (typeof s !== "string") return false;
-		// Allowed forms: "abc", "*abc", "abc*", "*abc*"
-		// (no internal asterisks beyond the edges)
-		const inner = s.replace(/^\*/, "").replace(/\*$/, "");
-		const hasOnlyEdgeAsterisks = s === inner || s === `*${inner}` || s === `${inner}*` || s === `*${inner}*`;
-		const innerHasNoAsterisk = !inner.includes("*");
-		return hasOnlyEdgeAsterisks && innerHasNoAsterisk;
-	}
-
-	private isString(x: unknown): x is string {
-		return typeof x === "string";
-	}
-
-	private assertObj(x: unknown, path: string): asserts x is object {
-		if (!x || typeof x !== "object" || Array.isArray(x)) {
-			// reject null, primitives, arrays
-			throw new InsightError(`${path}: expected object`);
-		}
-	}
-
-	// Ensure all required keys are present in 'actual'
-	private requireKeys(actual: string[], required: string[], path: string): void {
-		for (const k of required) {
-			if (!actual.includes(k)) {
-				throw new InsightError(`${path}: missing '${k}'`);
-			}
-		}
-	}
-
-	// Forbid any keys not listed in 'allowed'
-	private forbidExtra(actual: string[], allowed: string[], path: string): void {
-		for (const k of actual) {
-			if (!allowed.includes(k)) {
-				throw new InsightError(`${path}: unexpected key '${k}'`);
-			}
-		}
-	}
-
-	private isEmptyObject(x: unknown): boolean {
-		return (
-			!!x && // gives boolean equivalent of x's truthness
-			typeof x === "object" &&
-			!Array.isArray(x) &&
-			Object.keys(x).length === 0
-		);
 	}
 
 	// one of main funcs
