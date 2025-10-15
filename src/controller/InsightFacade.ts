@@ -249,11 +249,15 @@ export default class InsightFacade implements IInsightFacade {
 
 		// TODO !!! -- implement executing query
 
-		// TODO - result too large
+		const ids = this.collectDatasetIds(wellFormedQuery);
+		if (ids.size !== 1) {
+			throw new InsightError("Query references multiple datasets");
+		}
+
+		const datasetId = [...ids][0];
 
 		//  1) Loads the rows of the referenced dataset (from ./data/allDatasets.json)
 		const allDatasets = await this.loadAllDatasets();
-		const datasetId = this.getDatasetIdFromQuery(wellFormedQuery);
 		const dataset = allDatasets.find((d) => d.id === datasetId);
 		if (!dataset) throw new InsightError(`Dataset '${datasetId}' not found`);
 
@@ -264,9 +268,6 @@ export default class InsightFacade implements IInsightFacade {
 		if (this.isPlainEmptyObject(wellFormedQuery.WHERE) && rowsToFilter.length >= maxOutput) {
 			throw new ResultTooLargeError();
 		}
-		// else if (rowsToFilter.length >= maxOutput) {
-		// 	throw new ResultTooLargeError();
-		// }
 
 		const filtered = this.isPlainEmptyObject(wellFormedQuery.WHERE)
 			? rowsToFilter
@@ -308,16 +309,60 @@ export default class InsightFacade implements IInsightFacade {
 		return [];
 	}
 
-	private getDatasetIdFromQuery(query: { WHERE: unknown; OPTIONS: { COLUMNS: string[]; ORDER?: string } }): string {
-		// first COLUMN key
-		const idFromColumns = this.splitKey(query.OPTIONS.COLUMNS[0]).id;
-		return idFromColumns;
-	}
-
 	private splitKey(key: string): { id: string; field: string } {
 		const idx = key.indexOf("_");
 		if (idx < 0) throw new InsightError(`Bad key '${key}' (expected "<id>_<field>")`);
 		return { id: key.slice(0, idx), field: key.slice(idx + 1) };
+	}
+
+	private collectIdsFromWhere(node: unknown, out: Set<string>): void {
+		if (node && typeof node === "object" && !Array.isArray(node) && Object.keys(node as any).length === 0) {
+			// WHERE: {}
+			return;
+		}
+		if (!node || typeof node !== "object" || Array.isArray(node)) {
+			throw new InsightError("WHERE: expected object");
+		}
+
+		const obj = node as Record<string, unknown>;
+		const keys = Object.keys(obj);
+		if (keys.length !== 1) {
+			throw new InsightError("WHERE must have exactly one key (AND/OR/NOT/LT/GT/EQ/IS)");
+		}
+
+		const key = keys[0];
+
+		if (key === "NOT") {
+			this.collectIdsFromWhere(obj[key], out);
+			return;
+		}
+		if (key === "AND" || key === "OR") {
+			const arr = obj[key];
+			if (!Array.isArray(arr) || arr.length == 0) {
+				throw new InsightError(`${key}: must be a non-empty array of FILTER`);
+			}
+			for (const child of arr) this.collectIdsFromWhere(child, out);
+			return;
+		}
+		if (key === "LT" || key === "GT" || key === "EQ" || key === "IS") {
+			const inner = obj[key] as Record<string, unknown>;
+			const innerKeys = Object.keys(inner);
+			if (innerKeys.length !== 1) {
+				throw new InsightError(`${key}: must have exactly one key`);
+			}
+			const leafKey = innerKeys[0]; // eg. "sections_avg" or "sections_dept"
+			out.add(this.splitKey(leafKey).id);
+			return;
+		}
+		throw new InsightError(`Unknown operator '${key}'`);
+	}
+
+	private collectDatasetIds(query: { WHERE: unknown; OPTIONS: { COLUMNS: string[]; ORDER?: string } }): Set<string> {
+		const ids = new Set<string>();
+		for (const col of query.OPTIONS.COLUMNS) ids.add(this.splitKey(col).id);
+		if (query.OPTIONS.ORDER) ids.add(this.splitKey(query.OPTIONS.ORDER).id);
+		this.collectIdsFromWhere(query.WHERE, ids);
+		return ids;
 	}
 
 	// eval where recursively for one row

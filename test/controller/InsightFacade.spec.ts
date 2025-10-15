@@ -323,7 +323,7 @@ describe("InsightFacade", function () {
 		// Examples demonstrating how to test performQuery using the JSON Test Queries.
 		// The relative path to the query file must be given in square brackets.
 
-		// it("[valid/simple.json] SELECT dept, avg WHERE avg > 97", checkQuery); // TODO - returns empty when should be array !!!
+		// it("[valid/simple.json] SELECT dept, avg WHERE avg > 97", checkQuery); // TODO - difference in order in not order columns !!!
 		it("[invalid/nooption.json] Query missing COLUMNS", checkQuery);
 		it("[invalid/resultoobig.json] Return more than 5000", checkQuery);
 		it("[invalid/multipleref.json] References more than one dataset", checkQuery);
@@ -337,7 +337,7 @@ describe("InsightFacade", function () {
 		it("[invalid/nothinginwhere.json] nothing in WHERE", checkQuery);
 		it("[invalid/nothinginoptions.json] nothing in columns", checkQuery);
 		it("[invalid/wrongcomparetypeis.json]is compares number", checkQuery);
-		it("[invalid/actualrefmult.json]references multiple datasets", checkQuery); // TODO !!! (1)
+		it("[invalid/actualrefmult.json]references multiple datasets", checkQuery);
 		it("[invalid/incorrectreference.json]references nonexistent datasets", checkQuery);
 		it("[invalid/twowildcardsatfront.json]two wildcards at front", checkQuery);
 		it("[invalid/onlywildcard.json] nothing except wildcard", checkQuery);
