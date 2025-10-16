@@ -5,6 +5,7 @@ import {
 	InsightResult,
 	InsightError,
 	ResultTooLargeError,
+	NotFoundError,
 } from "./IInsightFacade";
 import { validateQuery } from "./query/validator";
 import { isPlainEmptyObject, collectDatasetIds, evalWhere, projectRows, sortResults } from "./query/executor";
@@ -160,8 +161,38 @@ export default class InsightFacade implements IInsightFacade {
 	}
 
 	public async removeDataset(id: string): Promise<string> {
-		// TODO: Remove this once you implement the methods!
-		throw new Error(`InsightFacadeImpl::removeDataset() is unimplemented! - id=${id};`);
+		if (!this.idValid(id)) {
+			throw new InsightError("Invalid id string");
+		}
+		let allDatasets;
+		try {
+			if (await fs.pathExists("./data/allDatasets.json")) {
+				allDatasets = await fs.readJson("./data/allDatasets.json");
+			} else {
+				await fs.ensureDir("./data");
+				allDatasets = [];
+			}
+		} catch {
+			throw new InsightError("Unable to read JSON");
+		}
+		let i: number = 0;
+		for (const dataset of allDatasets) {
+			if (dataset.id === id) {
+				break;
+			} else {
+				i++;
+			}
+		}
+		if (i === allDatasets.length) {
+			throw new NotFoundError("Did not find dataset with given id");
+		}
+		allDatasets.splice(i, 1);
+		try {
+			await fs.outputJSON("./data/allDatasets.json", allDatasets);
+		} catch {
+			throw new InsightError();
+		}
+		return id;
 	}
 
 	/* 1. parse and validate the input query
@@ -282,7 +313,25 @@ export default class InsightFacade implements IInsightFacade {
 
 	// one of main funcs
 	public async listDatasets(): Promise<InsightDataset[]> {
-		// TODO: Remove this once you implement the methods!
-		throw new Error(`InsightFacadeImpl::listDatasets is unimplemented!`);
+		let allDatasets;
+		try {
+			if (await fs.pathExists("./data/allDatasets.json")) {
+				allDatasets = await fs.readJson("./data/allDatasets.json");
+			} else {
+				await fs.ensureDir("./data");
+				allDatasets = [];
+			}
+		} catch {
+			throw new InsightError("Unable to read JSON");
+		}
+		const insightDataset: InsightDataset[] = [];
+		for (const dataset of allDatasets) {
+			insightDataset.push({
+				id: dataset.id,
+				kind: dataset.kind,
+				numRows: dataset.numRows,
+			});
+		}
+		return insightDataset;
 	}
 }
