@@ -357,14 +357,14 @@ describe("InsightFacade", function () {
 	});
 
 	describe("PerformQuery - validation only (no add/list/remove)", () => {
-		async function expectValid(query: unknown): Promise<void> {
-			try {
-				const res = await facade.performQuery(query);
-				expect(res).to.be.an("array");
-			} catch (err) {
-				expect.fail(`performQuery threw unexpected error: ${err}`);
-			}
-		}
+		// async function expectValid(query: unknown): Promise<void> {
+		// 	try {
+		// 		const res = await facade.performQuery(query);
+		// 		expect(res).to.be.an("array");
+		// 	} catch (err) {
+		// 		expect.fail(`performQuery threw unexpected error: ${err}`);
+		// 	}
+		// }
 
 		async function expectInvalid(query: unknown): Promise<void> {
 			try {
