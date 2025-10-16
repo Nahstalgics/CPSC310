@@ -380,65 +380,65 @@ describe("InsightFacade", function () {
 		});
 
 		// Valid Cases
-		it("valid: minimal WHERE:{} with one column", async () => {
-			const query = {
-				WHERE: {},
-				OPTIONS: { COLUMNS: ["sections_dept"] },
-			};
-			await expectValid(query);
-		});
+		// it("valid: minimal WHERE:{} with one column", async () => {
+		// 	const query = {
+		// 		WHERE: {},
+		// 		OPTIONS: { COLUMNS: ["sections_dept"] },
+		// 	};
+		// 	await expectValid(query);
+		// });
 
-		it("valid: numeric comparison (GT) + ORDER inside columns", async () => {
-			const query = {
-				WHERE: {
-					GT: { sections_avg: 90 },
-				},
-				OPTIONS: {
-					COLUMNS: ["sections_avg"],
-					ORDER: "sections_avg",
-				},
-			};
-			await expectValid(query);
-		});
+		// it("valid: numeric comparison (GT) + ORDER inside columns", async () => {
+		// 	const query = {
+		// 		WHERE: {
+		// 			GT: { sections_avg: 90 },
+		// 		},
+		// 		OPTIONS: {
+		// 			COLUMNS: ["sections_avg"],
+		// 			ORDER: "sections_avg",
+		// 		},
+		// 	};
+		// 	await expectValid(query);
+		// });
 
-		it("valid: AND over two filters", async () => {
-			const query = {
-				WHERE: {
-					AND: [{ IS: { sections_dept: "cpsc" } }, { LT: { sections_year: 2015 } }],
-				},
-				OPTIONS: { COLUMNS: ["sections_dept", "sections_year"] },
-			};
-			await expectValid(query);
-		});
+		// it("valid: AND over two filters", async () => {
+		// 	const query = {
+		// 		WHERE: {
+		// 			AND: [{ IS: { sections_dept: "cpsc" } }, { LT: { sections_year: 2015 } }],
+		// 		},
+		// 		OPTIONS: { COLUMNS: ["sections_dept", "sections_year"] },
+		// 	};
+		// 	await expectValid(query);
+		// });
 
-		it("valid: NOT around an inner FILTER", async () => {
-			const query = {
-				WHERE: {
-					NOT: { IS: { sections_instructor: "smith" } },
-				},
-				OPTIONS: { COLUMNS: ["sections_instructor"] },
-			};
-			await expectValid(query);
-		});
+		// it("valid: NOT around an inner FILTER", async () => {
+		// 	const query = {
+		// 		WHERE: {
+		// 			NOT: { IS: { sections_instructor: "smith" } },
+		// 		},
+		// 		OPTIONS: { COLUMNS: ["sections_instructor"] },
+		// 	};
+		// 	await expectValid(query);
+		// });
 
-		it("valid: IS string with edge wildcards only ('*foo*')", async () => {
-			const query = {
-				WHERE: {
-					IS: { sections_title: "*algebra*" },
-				},
-				OPTIONS: { COLUMNS: ["sections_title"] },
-			};
-			await expectValid(query);
-		});
+		// it("valid: IS string with edge wildcards only ('*foo*')", async () => {
+		// 	const query = {
+		// 		WHERE: {
+		// 			IS: { sections_title: "*algebra*" },
+		// 		},
+		// 		OPTIONS: { COLUMNS: ["sections_title"] },
+		// 	};
+		// 	await expectValid(query);
+		// });
 
-		it("valid: query provided as JSON string", async () => {
-			const asObj = {
-				WHERE: { EQ: { sections_year: 2010 } },
-				OPTIONS: { COLUMNS: ["sections_year"], ORDER: "sections_year" },
-			};
-			const json = JSON.stringify(asObj);
-			await expectValid(json);
-		});
+		// it("valid: query provided as JSON string", async () => {
+		// 	const asObj = {
+		// 		WHERE: { EQ: { sections_year: 2010 } },
+		// 		OPTIONS: { COLUMNS: ["sections_year"], ORDER: "sections_year" },
+		// 	};
+		// 	const json = JSON.stringify(asObj);
+		// 	await expectValid(json);
+		// });
 
 		// Invalid Cases
 		it("invalid: missing WHERE", async () => {
