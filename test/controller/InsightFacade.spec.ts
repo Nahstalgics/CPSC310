@@ -296,7 +296,7 @@ describe("InsightFacade", function () {
 			}
 			// TODO: replace this failing assertion with your assertions. You will need to reason about the code in this function
 			// to determine what to put here :)
-			expect(result).to.have.members(expected);
+			expect(result).to.have.deep.members(expected);
 			return;
 		}
 
@@ -341,19 +341,19 @@ describe("InsightFacade", function () {
 		it("[invalid/incorrectreference.json]references nonexistent datasets", checkQuery);
 		it("[invalid/twowildcardsatfront.json]two wildcards at front", checkQuery);
 		it("[invalid/onlywildcard.json] nothing except wildcard", checkQuery);
-		// it("[valid/yearequal1900.json] year = 1900", checkQuery); // TODO - returns empty when should be array !!!
-		// it("[invalid/year1900toobig.json] year = 1900, result too large", checkQuery); // because above returns empty !!!
-		// it("[valid/sectionsidcheck.json] normal check using sections_id", checkQuery); // difference in order in not order columns !!!
+		it("[valid/yearequal1900.json] year = 1900", checkQuery); // TODO - returns empty when should be array !!!
+		it("[invalid/year1900toobig.json] year = 1900, result too large", checkQuery); // because above returns empty !!!
+		it("[valid/sectionsidcheck.json] normal check using sections_id", checkQuery); // difference in order in not order columns !!!
 		it("[invalid/numforstr.json] number for sfield", checkQuery);
 		it("[invalid/strfornum.json] string for mfield", checkQuery);
-		// it("[valid/noorder.json] No ORDER query", checkQuery); // difference in order !!!
+		it("[valid/noorder.json] No ORDER query", checkQuery); // difference in order !!!
 		it("[valid/whitespaceasterisk.json] whitespace followed by asterisk, valid, but empty", checkQuery);
 		it("[invalid/randominor.json] OR compares GT and a string??", checkQuery);
 		it("[invalid/nothastwoargs.json] NOT compares two instead of only 1 FILTER", checkQuery);
 		it("[invalid/invalidop.json] invalid key", checkQuery);
 		it("[invalid/nothingincolumns.json] empty array in columns", checkQuery);
-		// it("[valid/complex.json]Complex Query", checkQuery); // difference in order in not order columns !!!
-		// it("[valid/nestednots.json]Nested NOts", checkQuery); // error too long to see - maybe wrong order, maybe wrong value !!!
+		it("[valid/complex.json]Complex Query", checkQuery); // difference in order in not order columns !!!
+		it("[valid/nestednots.json]Nested NOts", checkQuery); // error too long to see - maybe wrong order, maybe wrong value !!!
 	});
 
 	describe("PerformQuery - validation only (no add/list/remove)", () => {
