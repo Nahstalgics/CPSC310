@@ -29,7 +29,7 @@ export default class Server {
 
 	private registerRoutes(): void {
 		this.express.put("/dataset/:id/:kind", this.handelAddDataset);
-		this.express.delete("/datasets/:id", this.handelRemoveDataset);
+		this.express.delete("/dataset/:id", this.handelRemoveDataset);
 		this.express.post("/query", this.handelPerformQuery);
 		this.express.get("/datasets", this.handelListDatasets);
 	}
