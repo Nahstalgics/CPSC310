@@ -75,7 +75,6 @@ describe("Server", function () {
 	});
 
 	describe("Server DEL /dataset/:id (removeDataset)", function () {
-		// TODO: fix failing tetst !!!
 		before(async function () {
 			await addSectionsDataset("sectionsToDelete", "pair.zip");
 		});
@@ -152,7 +151,6 @@ describe("Server", function () {
 	});
 
 	describe("Server GET /datasets (listDatasets)", function () {
-		// TODO: implement tetst !!!
 		before(async function () {
 			await addSectionsDataset("sectionsList", "pair.zip");
 		});

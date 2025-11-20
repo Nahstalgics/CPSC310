@@ -54,6 +54,8 @@
 		"lint:fix": "eslint src test --ext .ts --fix",
 		"prettier:check": "prettier src/**/*.ts test/**/*.ts --check",
 		"prettier:fix": "prettier src/**/*.ts test/**/*.ts --write",
-		"start": "ts-node src/App.ts"
+		"start": "ts-node src/App.ts",
+		"build:frontend": "cd frontend && tsc",
+		"start:all": "yarn build:frontend && yarn start"
 	}
 }
