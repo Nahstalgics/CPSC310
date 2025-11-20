@@ -4,6 +4,7 @@ import http from "http";
 import { InsightDatasetKind } from "../controller/IInsightFacade";
 import InsightFacade from "../controller/InsightFacade";
 import { HttpStatus, handelError } from "./HandelError";
+import { Log } from "@ubccpsc310/project-support";
 
 export default class Server {
 	private express: Application;
@@ -27,9 +28,9 @@ export default class Server {
 	// ===== Route Registration =====
 
 	private registerRoutes(): void {
-		this.express.put("/datasets/{id}/sections", this.handelAddDataset);
-		this.express.delete("/datasets/{id}", this.handelRemoveDataset);
-		this.express.post("queries", this.handelPerformQuery);
+		this.express.put("/dataset/:id/:kind", this.handelAddDataset);
+		this.express.delete("/datasets/:id", this.handelRemoveDataset);
+		this.express.post("/query", this.handelPerformQuery);
 		this.express.get("/datasets", this.handelListDatasets);
 	}
 
@@ -84,8 +85,18 @@ export default class Server {
 	// ===== Server Lifecycle =====
 
 	public async start(port: number): Promise<void> {
+		Log.info(`Server::start(${port}) - starting`);
+
 		return new Promise((resolve, reject) => {
-			this.server = this.express.listen(port, () => resolve()).on("error", (err) => reject(err));
+			this.server = this.express
+				.listen(port, () => {
+					Log.info(`Server::start(${port}) - listening`);
+					resolve();
+				})
+				.on("error", (err: Error) => {
+					Log.error(`Server::start(${port}) - ERROR: ${err.message}`);
+					reject(err);
+				});
 		});
 	}
 
