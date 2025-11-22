@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>InsightUBC - Add Section</title>
+	<link rel="stylesheet" href="index.css">
+</head>
+<body>
+<header>
+	<h1>Welcome to InsightUBC!</h1>
+</header>
+
+<main>
+	<p>Let's manipulate some data!</p>
+
+	<section id="addSection">
+		<h2>Add New Section</h2>
+		<label for="sectionId">Section ID:</label>
+		<input type="text" id="sectionId" placeholder="Enter section ID">
+
+		<label for="sectionFile">Choose File:</label>
+		<input type="file" id="sectionFile">
+
+		<button id="addSectionBtn">Add</button>
+	</section>
+
+	<section id="addedSections">
+		<h2>Added Sections</h2>
+		<ul id="sectionsList">
+			<!-- Added sections will appear here -->
+		</ul>
+	</section>
+</main>
+
+<footer>
+	<p>&copy; 2025 InsightUBC</p>
+</footer>
+
+<script src="index.js"></script>
+</body>
+</html>
