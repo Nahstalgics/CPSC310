@@ -8,14 +8,14 @@
 </head>
 <body>
 <header>
-	<h1>Welcome to InsightUBC!</h1>
+	<h1>Welcome to InsightUBC - Sections!</h1>
 </header>
 
 <main>
 	<p>Let's manipulate some data!</p>
 
 	<section id="addSection">
-		<h2>Add New Section</h2>
+		<h2>Add New Dataset</h2>
 		<label for="sectionId">Section ID:</label>
 		<input type="text" id="sectionId" placeholder="Enter section ID">
 
@@ -31,10 +31,27 @@
 			<!-- Added sections will appear here -->
 		</ul>
 	</section>
+
+	<section id="querySection">
+		<h2>Run Query</h2>
+		<div class="query-container">
+			<!-- Query input on the left -->
+			<div class="query-input">
+				<textarea id="queryInput" rows="10" placeholder='Enter query JSON here'></textarea>
+				<button id="runQueryBtn">Run Query</button>
+			</div>
+
+			<!-- Query results on the right -->
+			<div class="query-results">
+				<h3>Results</h3>
+				<ul id="queryResultsList"></ul>
+			</div>
+		</div>
+	</section>
 </main>
 
 <footer>
-	<p>&copy; 2025 InsightUBC</p>
+	<p>&copy; 2025 Colin Yang, Michelle Mantel</p>
 </footer>
 
 <script src="index.js"></script>

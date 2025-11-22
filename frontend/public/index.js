@@ -15,13 +15,28 @@ document.addEventListener("DOMContentLoaded", () => {
 			return;
 		}
 
-		// Add to local array (you can replace this with an API call)
-		sections.push({ sectionId, fileName: file.name });
-		console.log("Added Section:", { sectionId, fileName: file.name });
+		// Add to local array
+		const section = { sectionId, fileName: file.name };
+		sections.push(section);
+		console.log("Added Section:", section);
 
-		// Update the list in the UI
+		// Update UI
 		const li = document.createElement("li");
-		li.textContent = `${sectionId} - ${file.name}`;
+		li.textContent = `${sectionId} - ${file.name} `;
+
+		// Add delete button
+		const delBtn = document.createElement("button");
+		delBtn.textContent = "Delete";
+		delBtn.style.marginLeft = "10px";
+		delBtn.addEventListener("click", () => {
+			// Remove from array
+			const index = sections.indexOf(section);
+			if (index > -1) sections.splice(index, 1);
+			// Remove from UI
+			li.remove();
+		});
+
+		li.appendChild(delBtn);
 		sectionsList.appendChild(li);
 
 		// Reset inputs
