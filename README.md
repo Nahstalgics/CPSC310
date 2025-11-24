@@ -5,6 +5,12 @@ Please keep your repository private.
 
 For information about the project, autotest, and the checkpoints, see the course webpage.
 
+## Starting The App 
+1.  type `yarn start:all`
+2.  leave the terminal running, and open a new terminal
+3.  in this new terminal, type `open frontend/public/index.html`
+4.  you will now be rederected to the InsightUBC web page 
+
 ## Configuring your environment
 
 To start using this project, you need to get your development environment configured so that you can build and execute the code.
