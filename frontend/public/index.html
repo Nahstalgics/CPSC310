@@ -32,6 +32,24 @@
 		</ul>
 	</section>
 
+	<section id="insightSection">
+		<h2>Dataset Insights</h2>
+
+		<!-- choose which dataset to visualize -->
+		<select id="datasetSelect"></select>
+
+		<div class="insight-buttons">
+			<button id="graph1Btn">Show Graph 1</button>
+			<button id="graph2Btn">Show Graph 2</button>
+			<button id="graph3Btn">Show Graph 3</button>
+		</div>
+
+		<div style="width: 600px; height: 350px; margin-top: 20px;">
+			<canvas id="insightChart"></canvas>
+		</div>
+	</section>
+
+	<!-- May be a feature we run if time	-->
 	<section id="querySection">
 		<h2>Run Query</h2>
 		<div class="query-container">
@@ -53,7 +71,7 @@
 <footer>
 	<p>&copy; 2025 Colin Yang, Michelle Mantel</p>
 </footer>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="index.js"></script>
 </body>
 </html>

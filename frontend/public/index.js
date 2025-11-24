@@ -1,46 +1,76 @@
-document.addEventListener("DOMContentLoaded", () => {
-	const addBtn = document.getElementById("addSectionBtn");
-	const sectionIdInput = document.getElementById("sectionId");
-	const sectionFileInput = document.getElementById("sectionFile");
-	const sectionsList = document.getElementById("sectionsList");
+// =======================================
+// INSIGHTS + CHART.JS SECTION
+// =======================================
+let currentChart = null;
 
-	const sections = []; // store added sections locally
+const datasetSelect = document.getElementById("datasetSelect");
+const insightCanvas = document.getElementById("insightChart");
 
-	addBtn.addEventListener("click", () => {
-		const sectionId = sectionIdInput.value.trim();
-		const file = sectionFileInput.files[0];
+// This should be filled when user uploads datasets
+// (You already store datasets in your existing array)
+let storedDatasets = [];
 
-		if (!sectionId || !file) {
-			alert("Please enter a Section ID and choose a file.");
-			return;
-		}
+// Call this whenever datasets change
+function refreshDatasetDropdown() {
+	datasetSelect.innerHTML = "";
+	for (const ds of storedDatasets) {
+		const opt = document.createElement("option");
+		opt.value = ds.sectionId; // use whatever ID you use
+		opt.textContent = ds.sectionId;
+		datasetSelect.appendChild(opt);
+	}
+}
 
-		// Add to local array
-		const section = { sectionId, fileName: file.name };
-		sections.push(section);
-		console.log("Added Section:", section);
+// Cleanly render chart
+function renderChart(type, labels, values) {
+	if (currentChart) currentChart.destroy();
 
-		// Update UI
-		const li = document.createElement("li");
-		li.textContent = `${sectionId} - ${file.name} `;
-
-		// Add delete button
-		const delBtn = document.createElement("button");
-		delBtn.textContent = "Delete";
-		delBtn.style.marginLeft = "10px";
-		delBtn.addEventListener("click", () => {
-			// Remove from array
-			const index = sections.indexOf(section);
-			if (index > -1) sections.splice(index, 1);
-			// Remove from UI
-			li.remove();
-		});
-
-		li.appendChild(delBtn);
-		sectionsList.appendChild(li);
-
-		// Reset inputs
-		sectionIdInput.value = "";
-		sectionFileInput.value = "";
+	currentChart = new Chart(insightCanvas, {
+		type: type,
+		data: {
+			labels: labels,
+			datasets: [
+				{
+					label: "Insight",
+					data: values,
+					borderWidth: 1,
+				},
+			],
+		},
+		options: {
+			responsive: true,
+			maintainAspectRatio: false,
+		},
 	});
+}
+
+// EXAMPLE DATA (replace with your filtering)
+function getExampleData() {
+	return {
+		labels: ["A", "B", "C", "D"],
+		valuesA: [10, 20, 15, 8],
+		valuesB: [4, 6, 9, 3],
+		valuesC: [7, 3, 12, 5],
+	};
+}
+
+// BUTTON 1
+document.getElementById("graph1Btn").addEventListener("click", () => {
+	const data = getExampleData();
+	renderChart("bar", data.labels, data.valuesA);
+});
+
+// BUTTON 2
+document.getElementById("graph2Btn").addEventListener("click", () => {
+	const data = getExampleData();
+	renderChart("line", data.labels, data.valuesB);
+});
+
+// BUTTON 3
+document.getElementById("graph3Btn").addEventListener("click", () => {
+	const data = getExampleData();
+
+	// scatter needs {x,y} pairs
+	const scatterData = data.valuesC.map((v, i) => ({ x: i, y: v }));
+	renderChart("scatter", scatterData, scatterData);
 });

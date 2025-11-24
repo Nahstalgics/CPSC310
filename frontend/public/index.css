@@ -99,3 +99,14 @@ textarea {
 	padding: 5px 0;
 	border-bottom: 1px solid #eee;
 }
+#insightSection {
+	margin-top: 30px;
+	padding: 15px;
+	border: 1px solid #ccc;
+	border-radius: 10px;
+}
+
+.insight-buttons button {
+	margin-right: 10px;
+	margin-top: 10px;
+}
