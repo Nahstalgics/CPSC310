@@ -166,6 +166,7 @@ describe("Server", function () {
 
 			const ids = res.body.result.map((d: any) => d.id);
 			expect(ids).to.include("sectionsList");
+			console.log(res.body.result);
 		});
 
 		it("should return datasets with id, kind, and numRows properties", async () => {
