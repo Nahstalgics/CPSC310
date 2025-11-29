@@ -1,39 +1,45 @@
 document.addEventListener("DOMContentLoaded", () => {
+	console.log("Page loaded.");
+
+	// === DOM ELEMENTS ===========================
 	const addBtn = document.getElementById("addSectionBtn");
 	const sectionIdInput = document.getElementById("sectionId");
 	const sectionFileInput = document.getElementById("sectionFile");
 	const sectionsList = document.getElementById("sectionsList");
-	const insightDatasetSelect = document.getElementById("insightDataset");
-	const loadInsightBtn = document.getElementById("loadInsightBtn");
 
-	const sections = []; // store added sections locally
-	let chartInstance = null;
+	const insightCanvas = document.getElementById("insightChart");
 
+	const graph1Btn = document.getElementById("graph1Btn");
+	const graph2Btn = document.getElementById("graph2Btn");
+	const graph3Btn = document.getElementById("graph3Btn");
+
+	// === STATE ================================
+	let selectedDataset = null;
+	let currentChart = null;
+
+	// === ADD DATASET ==========================
 	addBtn.addEventListener("click", async () => {
 		const sectionId = sectionIdInput.value.trim();
 		const file = sectionFileInput.files[0];
 
 		if (!sectionId || !file) {
-			alert("Please enter ID + file.");
+			alert("Please enter an ID and upload a file.");
 			return;
 		}
 
 		try {
-			// Convert file to ArrayBuffer, then to Uint8Array for fetch body
 			const arrayBuffer = await file.arrayBuffer();
 			const bytes = new Uint8Array(arrayBuffer);
 
 			const response = await fetch(`/dataset/${sectionId}/sections`, {
 				method: "PUT",
-				headers: {
-					"Content-Type": "application/x-zip-compressed",
-				},
-				body: bytes, // send raw bytes directly
+				headers: { "Content-Type": "application/x-zip-compressed" },
+				body: bytes,
 			});
 
 			if (!response.ok) {
 				const errText = await response.text();
-				throw new Error(`Failed to add dataset: ${errText}`);
+				throw new Error(`Failed to add: ${errText}`);
 			}
 
 			await refreshDatasets();
@@ -46,39 +52,54 @@ document.addEventListener("DOMContentLoaded", () => {
 		sectionFileInput.value = "";
 	});
 
+	// === REFRESH DATASETS ======================
 	async function refreshDatasets() {
 		try {
 			const res = await fetch("/datasets");
 			if (!res.ok) throw new Error("Failed to list datasets");
 
-			const data = await res.json(); // { result: [ { id, kind, numRows } ] }
+			const data = await res.json();
 			const datasets = data.result;
 
 			// Clear UI
 			sectionsList.innerHTML = "";
-			datasetSelect.innerHTML = "";
 
 			datasets.forEach((ds) => {
 				const li = document.createElement("li");
 
-				// Display dataset info
+				// Create radio for selecting dataset
+				const radio = document.createElement("input");
+				radio.type = "radio";
+				radio.name = "datasetSelectRadio";
+				radio.value = ds.id;
+				radio.style.marginRight = "10px";
+
+				radio.addEventListener("change", () => {
+					selectedDataset = ds.id;
+					console.log("Selected dataset:", selectedDataset);
+				});
+
+				// Info label
 				const infoSpan = document.createElement("span");
 				infoSpan.textContent = `${ds.id} — ${ds.kind} — ${ds.numRows} rows`;
 
-				// Optional delete button
+				// Delete button
 				const delBtn = document.createElement("button");
 				delBtn.textContent = "Delete";
+				delBtn.style.marginLeft = "10px";
+
 				delBtn.addEventListener("click", async () => {
 					try {
 						const delRes = await fetch(`/dataset/${ds.id}`, { method: "DELETE" });
-						if (!delRes.ok) throw new Error("Failed to delete");
-						refreshDatasets();
+						if (!delRes.ok) throw new Error("Failed to delete dataset");
+						await refreshDatasets();
 					} catch (err) {
 						console.error(err);
-						alert("Could not delete dataset");
+						alert("Could not delete dataset.");
 					}
 				});
 
+				li.appendChild(radio);
 				li.appendChild(infoSpan);
 				li.appendChild(delBtn);
 				sectionsList.appendChild(li);
@@ -87,7 +108,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				const opt = document.createElement("option");
 				opt.value = ds.id;
 				opt.textContent = ds.id;
-				datasetSelect.appendChild(opt);
 			});
 		} catch (err) {
 			console.error(err);
@@ -95,24 +115,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
+	// Initial load
 	refreshDatasets();
-	let currentChart = null;
 
-	const datasetSelect = document.getElementById("datasetSelect");
-	const insightCanvas = document.getElementById("insightChart");
-
-	let storedDatasets = [];
-
-	function refreshDatasetDropdown() {
-		datasetSelect.innerHTML = "";
-		for (const ds of storedDatasets) {
-			const opt = document.createElement("option");
-			opt.value = ds.sectionId; // use whatever ID you use
-			opt.textContent = ds.sectionId;
-			datasetSelect.appendChild(opt);
-		}
-	}
-
+	// === CHART RENDERER =========================
 	function renderChart(type, labels, values) {
 		if (currentChart) currentChart.destroy();
 
@@ -124,7 +130,8 @@ document.addEventListener("DOMContentLoaded", () => {
 					{
 						label: "Insight",
 						data: values,
-						borderWidth: 1,
+						borderWidth: 2,
+						pointRadius: type === "scatter" ? 5 : 3,
 					},
 				],
 			},
@@ -135,6 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
+	// === EXAMPLE DATA (Temporary) ================
 	function getExampleData() {
 		return {
 			labels: ["A", "B", "C", "D"],
@@ -144,21 +152,111 @@ document.addEventListener("DOMContentLoaded", () => {
 		};
 	}
 
-	document.getElementById("graph1Btn").addEventListener("click", () => {
-		const data = getExampleData();
-		renderChart("bar", data.labels, data.valuesA);
+	function getSelectedDataset() {
+		if (!selectedDataset) return null;
+		return selectedDataset;
+	}
+
+	async function loadDepartments(datasetID) {
+		const deptKey = `${datasetID}_dept`;
+
+		const query = {
+			WHERE: {},
+			OPTIONS: {
+				COLUMNS: [deptKey],
+				ORDER: deptKey,
+			},
+			TRANSFORMATIONS: {
+				GROUP: [deptKey],
+				APPLY: [],
+			},
+		};
+
+		const res = await fetch("/query", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(query),
+		});
+
+		const data = await res.json();
+		return data.result.map((r) => r[deptKey]);
+	}
+
+	async function loadTopCourses(datasetID, dept) {
+		const deptKey = `${datasetID}_dept`;
+		const idKey = `${datasetID}_id`;
+		const avgKey = `${datasetID}_avg`;
+
+		const query = {
+			WHERE: { EQ: { [deptKey]: dept } },
+			OPTIONS: {
+				COLUMNS: [idKey, deptKey, avgKey],
+				ORDER: { dir: "DOWN", keys: [avgKey] },
+			},
+		};
+
+		const res = await fetch("/query", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(query),
+		});
+
+		const data = await res.json();
+		return data.result;
+	}
+
+	graph1Btn.addEventListener("click", async () => {
+		const datasetID = getSelectedDataset();
+		if (!datasetID) {
+			alert("Please select a dataset first.");
+			return;
+		}
+
+		console.log("Graph 1: Using dataset:", datasetID);
+
+		// Step 1: Load all departments
+		const departments = await loadDepartments(datasetID);
+		console.log("Departments:", departments);
+
+		// Step 2: Populate dropdown
+		const dropdown = document.getElementById("deptDropdown");
+		dropdown.innerHTML = "";
+		departments.forEach((dept) => {
+			const opt = document.createElement("option");
+			opt.value = dept;
+			opt.textContent = dept.toUpperCase();
+			dropdown.appendChild(opt);
+		});
+
+		// Step 3: When user picks a department → fetch + render
+		dropdown.onchange = async () => {
+			const selectedDept = dropdown.value;
+			console.log("Graph 1: Selected dept:", selectedDept);
+
+			const results = await loadTopCourses(datasetID, selectedDept);
+			console.log("Top courses:", results);
+
+			const idKey = `${datasetID}_id`;
+			const avgKey = `${datasetID}_avg`;
+
+			const labels = results.map((r) => r[idKey]);
+			const values = results.map((r) => r[avgKey]);
+
+			// Horizontal bar chart
+			renderChart("bar-horizontal", labels, values);
+		};
+
+		alert("Select a department from the dropdown to generate the graph.");
 	});
 
-	document.getElementById("graph2Btn").addEventListener("click", () => {
+	graph2Btn.addEventListener("click", () => {
 		const data = getExampleData();
 		renderChart("line", data.labels, data.valuesB);
 	});
 
-	document.getElementById("graph3Btn").addEventListener("click", () => {
+	graph3Btn.addEventListener("click", () => {
 		const data = getExampleData();
-
-		// scatter needs {x,y} pairs
-		const scatterData = data.valuesC.map((v, i) => ({ x: i, y: v }));
-		renderChart("scatter", scatterData, scatterData);
+		const scatterPoints = data.valuesC.map((v, i) => ({ x: i, y: v }));
+		renderChart("scatter", scatterPoints, scatterPoints);
 	});
 });
