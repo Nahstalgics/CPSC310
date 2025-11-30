@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	// === STATE ================================
 	let selectedDataset = null;
 	let currentChart = null;
-	let lastGraphFunction = null; // Track which graph was last displayed
+	let lastGraphFunction = null;
 
 	// === ADD DATASET ==========================
 	addBtn.addEventListener("click", async () => {
@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				headers: {
 					"Content-Type": "application/x-zip-compressed",
 				},
-				body: bytes, // send raw bytes directly
+				body: bytes,
 			});
 
 			if (!response.ok) {
@@ -48,9 +48,10 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 
 			await refreshDatasets();
+			alert("Successfully added!");
 		} catch (err) {
 			console.error(err);
-			alert("API error: Could not add dataset.");
+			alert("API error: Invalid ID or File.");
 		}
 
 		sectionIdInput.value = "";
@@ -60,19 +61,17 @@ document.addEventListener("DOMContentLoaded", () => {
 	// === REFRESH DATASETS ======================
 	async function refreshDatasets() {
 		try {
-			const res = await fetch("/datasets");
+			const res = await fetch(`${API_BASE}/datasets`);
 			if (!res.ok) throw new Error("Failed to list datasets");
 
 			const data = await res.json();
 			const datasets = data.result;
 
-			// Clear UI
 			sectionsList.innerHTML = "";
 
 			datasets.forEach((ds) => {
 				const li = document.createElement("li");
 
-				// Create radio for selecting dataset
 				const radio = document.createElement("input");
 				radio.type = "radio";
 				radio.name = "datasetSelectRadio";
@@ -84,18 +83,16 @@ document.addEventListener("DOMContentLoaded", () => {
 					console.log("Selected dataset:", selectedDataset);
 				});
 
-				// Info label
 				const infoSpan = document.createElement("span");
-				infoSpan.textContent = `${ds.id} — ${ds.kind} — ${ds.numRows} rows`;
+				infoSpan.textContent = `${ds.id}    |    ${ds.numRows} rows`;
 
-				// Delete button
 				const delBtn = document.createElement("button");
 				delBtn.textContent = "Delete";
 				delBtn.style.marginLeft = "10px";
 
 				delBtn.addEventListener("click", async () => {
 					try {
-						const delRes = await fetch(`/dataset/${ds.id}`, { method: "DELETE" });
+						const delRes = await fetch(`${API_BASE}/dataset/${ds.id}`, { method: "DELETE" });
 						if (!delRes.ok) throw new Error("Failed to delete dataset");
 						await refreshDatasets();
 					} catch (err) {
@@ -109,7 +106,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				li.appendChild(delBtn);
 				sectionsList.appendChild(li);
 
-				// Update dropdown
 				const opt = document.createElement("option");
 				opt.value = ds.id;
 				opt.textContent = ds.id;
@@ -120,7 +116,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
-	// Initial load
 	refreshDatasets();
 
 	// === CHART RENDERER =========================
@@ -147,16 +142,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	// === EXAMPLE DATA (Temporary) ================
-	function getExampleData() {
-		return {
-			labels: ["A", "B", "C", "D"],
-			valuesA: [10, 20, 15, 8],
-			valuesB: [4, 6, 9, 3],
-			valuesC: [7, 3, 12, 5],
-		};
-	}
-
 	function renderChartOne(labels, values) {
 		if (currentChart) currentChart.destroy();
 
@@ -173,7 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				],
 			},
 			options: {
-				indexAxis: "y", // sideways bar
+				indexAxis: "y",
 				responsive: true,
 				maintainAspectRatio: false,
 			},
@@ -383,7 +368,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	async function loadTopSections() {
 		const deptName = graph1DeptSelect.value;
 
-		// Validate dataset selection
 		if (!selectedDataset) {
 			alert("Please select a dataset first.");
 			return;
@@ -406,23 +390,16 @@ document.addEventListener("DOMContentLoaded", () => {
 		try {
 			const result = await doQuery(query);
 
-			// Extract data from query results
-			// Assuming result is an array of objects with the format:
-			// [{sections_id: "...", sections_avg: 85.5}, ...]
-
 			if (!result || result.length === 0) {
 				alert("No data found for this department.");
 				return;
 			}
 
-			// Reverse to get highest averages first, then limit to top 10
 			const topSections = result.reverse().slice(0, 10);
 
-			// Extract labels (section IDs) and values (averages)
 			const labels = topSections.map((item) => item[`${selectedDataset}_id`]);
 			const values = topSections.map((item) => item[`${selectedDataset}_avg`]);
 
-			// Render the chart
 			renderChartOne(labels, values);
 		} catch (err) {
 			console.error("Error loading top sections:", err);
@@ -430,7 +407,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
-	// Helper function to execute queries
 	async function doQuery(query) {
 		const response = await fetch(`${API_BASE}/query`, {
 			method: "POST",
@@ -449,11 +425,8 @@ document.addEventListener("DOMContentLoaded", () => {
 		return data.result;
 	}
 
-	// Load top instructors by average (for Graph 2) - without TRANSFORMATIONS
 	async function loadTopInstructors() {
 		const deptName = graph1DeptSelect.value;
-
-		// Validate dataset selection
 		if (!selectedDataset) {
 			alert("Please select a dataset first.");
 			return;
@@ -480,14 +453,12 @@ document.addEventListener("DOMContentLoaded", () => {
 				return;
 			}
 
-			// Manually group by instructor and calculate averages
 			const instructorMap = {};
 
 			result.forEach((item) => {
 				const instructor = item[`${selectedDataset}_instructor`];
 				const avg = item[`${selectedDataset}_avg`];
 
-				// Skip sections without an instructor name (empty, null, undefined, or whitespace)
 				if (!instructor || instructor.trim() === "") {
 					return;
 				}
@@ -503,20 +474,16 @@ document.addEventListener("DOMContentLoaded", () => {
 				instructorMap[instructor].count += 1;
 			});
 
-			// Calculate averages and create array
 			const instructorAverages = Object.keys(instructorMap).map((instructor) => ({
 				instructor: instructor,
 				average: instructorMap[instructor].sum / instructorMap[instructor].count,
 			}));
 
-			// Sort by average (descending) and take top 10
 			const topInstructors = instructorAverages.sort((a, b) => b.average - a.average).slice(0, 10);
 
-			// Extract labels (instructor names) and values (averages)
 			const labels = topInstructors.map((item) => item.instructor);
 			const values = topInstructors.map((item) => item.average);
 
-			// Render the chart
 			renderChartOne(labels, values);
 		} catch (err) {
 			console.error("Error loading top instructors:", err);
@@ -524,17 +491,14 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
-	// Load course averages over years (for Graph 3)
 	async function loadCourseOverYears() {
 		const deptName = graph1DeptSelect.value;
 
-		// Validate dataset selection
 		if (!selectedDataset) {
 			alert("Please select a dataset first.");
 			return;
 		}
 
-		// Prompt user for a specific course ID
 		const courseId = prompt("Enter a course ID (e.g., 310, 213):");
 		if (!courseId || courseId.trim() === "") {
 			return;
@@ -571,14 +535,12 @@ document.addEventListener("DOMContentLoaded", () => {
 				return;
 			}
 
-			// Group by year and calculate average for each year
 			const yearMap = {};
 
 			result.forEach((item) => {
 				const year = item[`${selectedDataset}_year`];
 				const avg = item[`${selectedDataset}_avg`];
 
-				// Skip year 1900 (overall sections)
 				if (year === 1900) {
 					return;
 				}
@@ -594,7 +556,6 @@ document.addEventListener("DOMContentLoaded", () => {
 				yearMap[year].count += 1;
 			});
 
-			// Calculate averages and create array, sorted by year
 			const yearAverages = Object.keys(yearMap)
 				.map((year) => ({
 					year: parseInt(year),
@@ -607,11 +568,9 @@ document.addEventListener("DOMContentLoaded", () => {
 				return;
 			}
 
-			// Extract labels (years) and values (averages)
 			const labels = yearAverages.map((item) => item.year.toString());
 			const values = yearAverages.map((item) => item.average);
 
-			// Render as line chart
 			renderCourseLineChart(labels, values, `${deptName.toUpperCase()} ${courseId}`);
 		} catch (err) {
 			console.error("Error loading course over years:", err);
@@ -635,7 +594,7 @@ document.addEventListener("DOMContentLoaded", () => {
 						borderWidth: 3,
 						pointRadius: 5,
 						pointBackgroundColor: "#0077cc",
-						tension: 0.2, // slight curve to the line
+						tension: 0.2,
 						fill: true,
 					},
 				],
@@ -662,7 +621,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	}
 
-	// Event listener for Graph 1 button - loads top sections when clicked
 	graph1Btn.addEventListener("click", async () => {
 		if (!selectedDataset) {
 			alert("Please select a dataset first by clicking on a radio button in the 'Added Sections' list.");
@@ -674,19 +632,16 @@ document.addEventListener("DOMContentLoaded", () => {
 			return;
 		}
 
-		lastGraphFunction = loadTopSections; // Remember this graph
+		lastGraphFunction = loadTopSections;
 		await loadTopSections();
 	});
 
-	// Event listener for department dropdown change - auto-update if data already loaded
 	graph1DeptSelect.addEventListener("change", async () => {
-		// Only auto-update if a dataset is selected, chart exists, and we know which graph to show
 		if (selectedDataset && currentChart && lastGraphFunction) {
 			await lastGraphFunction();
 		}
 	});
 
-	// Event listener for Graph 2 button - loads top instructors when clicked
 	graph2Btn.addEventListener("click", async () => {
 		if (!selectedDataset) {
 			alert("Please select a dataset first by clicking on a radio button in the 'Added Sections' list.");
@@ -698,11 +653,10 @@ document.addEventListener("DOMContentLoaded", () => {
 			return;
 		}
 
-		lastGraphFunction = loadTopInstructors; // Remember this graph
+		lastGraphFunction = loadTopInstructors;
 		await loadTopInstructors();
 	});
 
-	// Event listener for Graph 3 button - loads course over years when clicked
 	graph3Btn.addEventListener("click", async () => {
 		if (!selectedDataset) {
 			alert("Please select a dataset first by clicking on a radio button in the 'Added Sections' list.");
@@ -714,7 +668,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			return;
 		}
 
-		lastGraphFunction = loadCourseOverYears; // Remember this graph
+		lastGraphFunction = loadCourseOverYears;
 		await loadCourseOverYears();
 	});
 });
