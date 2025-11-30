@@ -6,9 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	const sectionIdInput = document.getElementById("sectionId");
 	const sectionFileInput = document.getElementById("sectionFile");
 	const sectionsList = document.getElementById("sectionsList");
-
 	const insightCanvas = document.getElementById("insightChart");
-
 	const graph1Btn = document.getElementById("graph1Btn");
 	const graph2Btn = document.getElementById("graph2Btn");
 	const graph3Btn = document.getElementById("graph3Btn");
@@ -395,7 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				return;
 			}
 
-			const topSections = result.reverse().slice(0, 10);
+			const topSections = result.reverse().slice(0, 20);
 
 			const labels = topSections.map((item) => item[`${selectedDataset}_id`]);
 			const values = topSections.map((item) => item[`${selectedDataset}_avg`]);
