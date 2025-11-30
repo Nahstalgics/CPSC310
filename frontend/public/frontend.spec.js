@@ -3,7 +3,6 @@
  */
 
 test("clicking the Add button triggers its event listener", () => {
-	// Insert your HTML
 	document.body.innerHTML = `
     <section id="addSection">
       <h2>Add New Dataset</h2>
@@ -19,13 +18,10 @@ test("clicking the Add button triggers its event listener", () => {
   `;
 
 	const btn = document.getElementById("addSectionBtn");
-
-	// A simple effect so we know the click worked
 	btn.addEventListener("click", () => {
 		btn.dataset.clicked = "true";
 	});
 
-	// Simulate a click using raw DOM
 	btn.click();
 
 	// Check the event actually fired
