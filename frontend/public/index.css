@@ -75,9 +75,40 @@ footer {
 	border-radius: 10px;
 }
 
+/* Chart container - increased height */
+#insightSection > div:last-child {
+	width: 800px;
+	height: 500px;
+	margin-top: 20px;
+}
+
+/* Dropdown above buttons */
+#graph1Controls {
+	margin-bottom: 15px;
+	padding: 10px;
+	background-color: #f9f9f9;
+	border-radius: 6px;
+}
+
+#graph1Controls label {
+	display: inline-block;
+	margin-right: 10px;
+	font-weight: 600;
+}
+
+#graph1DeptSelect {
+	padding: 8px 12px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	font-size: 0.9rem;
+	min-width: 150px;
+}
+
+/* Buttons side by side */
 .insight-buttons button {
 	margin-right: 10px;
-	margin-top: 10px;
+	margin-bottom: 10px;
+	display: inline-block;
 }
 
 /* Added sections card-style */

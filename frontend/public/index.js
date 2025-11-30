@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
 	console.log("Page loaded.");
-
+	const API_BASE = "http://localhost:4321";
 	// === DOM ELEMENTS ===========================
 	const addBtn = document.getElementById("addSectionBtn");
 	const sectionIdInput = document.getElementById("sectionId");
@@ -12,10 +12,13 @@ document.addEventListener("DOMContentLoaded", () => {
 	const graph1Btn = document.getElementById("graph1Btn");
 	const graph2Btn = document.getElementById("graph2Btn");
 	const graph3Btn = document.getElementById("graph3Btn");
+	const graph1Controls = document.getElementById("graph1Controls");
+	const graph1DeptSelect = document.getElementById("graph1DeptSelect");
 
 	// === STATE ================================
 	let selectedDataset = null;
 	let currentChart = null;
+	let lastGraphFunction = null; // Track which graph was last displayed
 
 	// === ADD DATASET ==========================
 	addBtn.addEventListener("click", async () => {
@@ -31,10 +34,12 @@ document.addEventListener("DOMContentLoaded", () => {
 			const arrayBuffer = await file.arrayBuffer();
 			const bytes = new Uint8Array(arrayBuffer);
 
-			const response = await fetch(`/dataset/${sectionId}/sections`, {
+			const response = await fetch(`${API_BASE}/dataset/${sectionId}/sections`, {
 				method: "PUT",
-				headers: { "Content-Type": "application/x-zip-compressed" },
-				body: bytes,
+				headers: {
+					"Content-Type": "application/x-zip-compressed",
+				},
+				body: bytes, // send raw bytes directly
 			});
 
 			if (!response.ok) {
@@ -152,111 +157,564 @@ document.addEventListener("DOMContentLoaded", () => {
 		};
 	}
 
-	function getSelectedDataset() {
-		if (!selectedDataset) return null;
-		return selectedDataset;
-	}
+	function renderChartOne(labels, values) {
+		if (currentChart) currentChart.destroy();
 
-	async function loadDepartments(datasetID) {
-		const deptKey = `${datasetID}_dept`;
-
-		const query = {
-			WHERE: {},
-			OPTIONS: {
-				COLUMNS: [deptKey],
-				ORDER: deptKey,
+		currentChart = new Chart(insightCanvas, {
+			type: "bar",
+			data: {
+				labels: labels,
+				datasets: [
+					{
+						label: "Section Avg",
+						data: values,
+						backgroundColor: "#0077cc",
+					},
+				],
 			},
-			TRANSFORMATIONS: {
-				GROUP: [deptKey],
-				APPLY: [],
+			options: {
+				indexAxis: "y", // sideways bar
+				responsive: true,
+				maintainAspectRatio: false,
 			},
-		};
-
-		const res = await fetch("/query", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(query),
 		});
-
-		const data = await res.json();
-		return data.result.map((r) => r[deptKey]);
 	}
 
-	async function loadTopCourses(datasetID, dept) {
-		const deptKey = `${datasetID}_dept`;
-		const idKey = `${datasetID}_id`;
-		const avgKey = `${datasetID}_avg`;
+	const departments = [
+		// couldn't use transformation.
+		"aanb",
+		"adhe",
+		"anat",
+		"anth",
+		"apbi",
+		"appp",
+		"apsc",
+		"arbc",
+		"arch",
+		"arcl",
+		"arst",
+		"arth",
+		"asia",
+		"asic",
+		"astr",
+		"astu",
+		"atsc",
+		"audi",
+		"ba",
+		"baac",
+		"babs",
+		"baen",
+		"bafi",
+		"bahr",
+		"bait",
+		"bala",
+		"bama",
+		"bams",
+		"bapa",
+		"basc",
+		"basm",
+		"baul",
+		"bioc",
+		"biof",
+		"biol",
+		"bmeg",
+		"bota",
+		"busi",
+		"caps",
+		"ccst",
+		"ceen",
+		"cell",
+		"cens",
+		"chbe",
+		"chem",
+		"chil",
+		"chin",
+		"cics",
+		"civl",
+		"clch",
+		"clst",
+		"cnps",
+		"cnrs",
+		"cnto",
+		"coec",
+		"cogs",
+		"cohr",
+		"comm",
+		"cons",
+		"cpen",
+		"cpsc",
+		"crwr",
+		"dani",
+		"dent",
+		"dhyg",
+		"eced",
+		"econ",
+		"edcp",
+		"edst",
+		"educ",
+		"eece",
+		"elec",
+		"ends",
+		"engl",
+		"enph",
+		"envr",
+		"eosc",
+		"epse",
+		"etec",
+		"fhis",
+		"fipr",
+		"fish",
+		"fist",
+		"fmst",
+		"fnel",
+		"fnh",
+		"fnis",
+		"food",
+		"fopr",
+		"fre",
+		"fren",
+		"frst",
+		"gbpr",
+		"geob",
+		"geog",
+		"germ",
+		"gpp",
+		"grek",
+		"grsj",
+		"gsat",
+		"hebr",
+		"hgse",
+		"hinu",
+		"hist",
+		"hunu",
+		"iar",
+		"igen",
+		"info",
+		"isci",
+		"ital",
+		"itst",
+		"iwme",
+		"japn",
+		"jrnl",
+		"kin",
+		"korn",
+		"lais",
+		"larc",
+		"laso",
+		"last",
+		"latn",
+		"law",
+		"lfs",
+		"libe",
+		"libr",
+		"ling",
+		"lled",
+		"math",
+		"mdvl",
+		"mech",
+		"medg",
+		"medi",
+		"micb",
+		"midw",
+		"mine",
+		"mrne",
+		"mtrl",
+		"musc",
+		"name",
+		"nest",
+		"nrsc",
+		"nurs",
+		"obst",
+		"onco",
+		"path",
+		"pcth",
+		"pers",
+		"phar",
+		"phil",
+		"phrm",
+		"phth",
+		"phys",
+		"plan",
+		"poli",
+		"pols",
+		"port",
+		"psyc",
+		"punj",
+		"relg",
+		"rgla",
+		"rhsc",
+		"rmes",
+		"rmst",
+		"rsot",
+		"russ",
+		"sans",
+		"scan",
+		"scie",
+		"soci",
+		"soil",
+		"sowk",
+		"span",
+		"spha",
+		"spph",
+		"stat",
+		"sts",
+		"surg",
+		"swed",
+		"test",
+		"thtr",
+		"udes",
+		"ufor",
+		"urst",
+		"ursy",
+		"vant",
+		"visa",
+		"wood",
+		"wrds",
+		"zool",
+	];
 
-		const query = {
-			WHERE: { EQ: { [deptKey]: dept } },
-			OPTIONS: {
-				COLUMNS: [idKey, deptKey, avgKey],
-				ORDER: { dir: "DOWN", keys: [avgKey] },
-			},
-		};
+	departments.forEach((dept) => {
+		const opt = document.createElement("option");
+		opt.value = dept;
+		opt.textContent = dept.toUpperCase();
+		graph1DeptSelect.appendChild(opt);
+	});
 
-		const res = await fetch("/query", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(query),
-		});
+	async function loadTopSections() {
+		const deptName = graph1DeptSelect.value;
 
-		const data = await res.json();
-		return data.result;
-	}
-
-	graph1Btn.addEventListener("click", async () => {
-		const datasetID = getSelectedDataset();
-		if (!datasetID) {
+		// Validate dataset selection
+		if (!selectedDataset) {
 			alert("Please select a dataset first.");
 			return;
 		}
 
-		console.log("Graph 1: Using dataset:", datasetID);
+		console.log("Loading top sections for department:", deptName);
 
-		// Step 1: Load all departments
-		const departments = await loadDepartments(datasetID);
-		console.log("Departments:", departments);
-
-		// Step 2: Populate dropdown
-		const dropdown = document.getElementById("deptDropdown");
-		dropdown.innerHTML = "";
-		departments.forEach((dept) => {
-			const opt = document.createElement("option");
-			opt.value = dept;
-			opt.textContent = dept.toUpperCase();
-			dropdown.appendChild(opt);
-		});
-
-		// Step 3: When user picks a department → fetch + render
-		dropdown.onchange = async () => {
-			const selectedDept = dropdown.value;
-			console.log("Graph 1: Selected dept:", selectedDept);
-
-			const results = await loadTopCourses(datasetID, selectedDept);
-			console.log("Top courses:", results);
-
-			const idKey = `${datasetID}_id`;
-			const avgKey = `${datasetID}_avg`;
-
-			const labels = results.map((r) => r[idKey]);
-			const values = results.map((r) => r[avgKey]);
-
-			// Horizontal bar chart
-			renderChart("bar-horizontal", labels, values);
+		const query = {
+			WHERE: {
+				IS: {
+					[`${selectedDataset}_dept`]: deptName,
+				},
+			},
+			OPTIONS: {
+				COLUMNS: [`${selectedDataset}_id`, `${selectedDataset}_avg`],
+				ORDER: `${selectedDataset}_avg`,
+			},
 		};
 
-		alert("Select a department from the dropdown to generate the graph.");
+		try {
+			const result = await doQuery(query);
+
+			// Extract data from query results
+			// Assuming result is an array of objects with the format:
+			// [{sections_id: "...", sections_avg: 85.5}, ...]
+
+			if (!result || result.length === 0) {
+				alert("No data found for this department.");
+				return;
+			}
+
+			// Reverse to get highest averages first, then limit to top 10
+			const topSections = result.reverse().slice(0, 10);
+
+			// Extract labels (section IDs) and values (averages)
+			const labels = topSections.map((item) => item[`${selectedDataset}_id`]);
+			const values = topSections.map((item) => item[`${selectedDataset}_avg`]);
+
+			// Render the chart
+			renderChartOne(labels, values);
+		} catch (err) {
+			console.error("Error loading top sections:", err);
+			alert("Failed to load section data. Check console for details.");
+		}
+	}
+
+	// Helper function to execute queries
+	async function doQuery(query) {
+		const response = await fetch(`${API_BASE}/query`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(query),
+		});
+
+		if (!response.ok) {
+			const errText = await response.text();
+			throw new Error(`Query failed: ${errText}`);
+		}
+
+		const data = await response.json();
+		return data.result;
+	}
+
+	// Load top instructors by average (for Graph 2) - without TRANSFORMATIONS
+	async function loadTopInstructors() {
+		const deptName = graph1DeptSelect.value;
+
+		// Validate dataset selection
+		if (!selectedDataset) {
+			alert("Please select a dataset first.");
+			return;
+		}
+
+		console.log("Loading top instructors for department:", deptName);
+
+		const query = {
+			WHERE: {
+				IS: {
+					[`${selectedDataset}_dept`]: deptName,
+				},
+			},
+			OPTIONS: {
+				COLUMNS: [`${selectedDataset}_instructor`, `${selectedDataset}_avg`],
+			},
+		};
+
+		try {
+			const result = await doQuery(query);
+
+			if (!result || result.length === 0) {
+				alert("No data found for this department.");
+				return;
+			}
+
+			// Manually group by instructor and calculate averages
+			const instructorMap = {};
+
+			result.forEach((item) => {
+				const instructor = item[`${selectedDataset}_instructor`];
+				const avg = item[`${selectedDataset}_avg`];
+
+				// Skip sections without an instructor name (empty, null, undefined, or whitespace)
+				if (!instructor || instructor.trim() === "") {
+					return;
+				}
+
+				if (!instructorMap[instructor]) {
+					instructorMap[instructor] = {
+						sum: 0,
+						count: 0,
+					};
+				}
+
+				instructorMap[instructor].sum += avg;
+				instructorMap[instructor].count += 1;
+			});
+
+			// Calculate averages and create array
+			const instructorAverages = Object.keys(instructorMap).map((instructor) => ({
+				instructor: instructor,
+				average: instructorMap[instructor].sum / instructorMap[instructor].count,
+			}));
+
+			// Sort by average (descending) and take top 10
+			const topInstructors = instructorAverages.sort((a, b) => b.average - a.average).slice(0, 10);
+
+			// Extract labels (instructor names) and values (averages)
+			const labels = topInstructors.map((item) => item.instructor);
+			const values = topInstructors.map((item) => item.average);
+
+			// Render the chart
+			renderChartOne(labels, values);
+		} catch (err) {
+			console.error("Error loading top instructors:", err);
+			alert("Failed to load instructor data. Check console for details.");
+		}
+	}
+
+	// Load course averages over years (for Graph 3)
+	async function loadCourseOverYears() {
+		const deptName = graph1DeptSelect.value;
+
+		// Validate dataset selection
+		if (!selectedDataset) {
+			alert("Please select a dataset first.");
+			return;
+		}
+
+		// Prompt user for a specific course ID
+		const courseId = prompt("Enter a course ID (e.g., 310, 213):");
+		if (!courseId || courseId.trim() === "") {
+			return;
+		}
+
+		console.log(`Loading averages for ${deptName} ${courseId} over years`);
+
+		const query = {
+			WHERE: {
+				AND: [
+					{
+						IS: {
+							[`${selectedDataset}_dept`]: deptName,
+						},
+					},
+					{
+						IS: {
+							[`${selectedDataset}_id`]: courseId.trim(),
+						},
+					},
+				],
+			},
+			OPTIONS: {
+				COLUMNS: [`${selectedDataset}_year`, `${selectedDataset}_avg`],
+				ORDER: `${selectedDataset}_year`,
+			},
+		};
+
+		try {
+			const result = await doQuery(query);
+
+			if (!result || result.length === 0) {
+				alert(`No data found for ${deptName} ${courseId}.`);
+				return;
+			}
+
+			// Group by year and calculate average for each year
+			const yearMap = {};
+
+			result.forEach((item) => {
+				const year = item[`${selectedDataset}_year`];
+				const avg = item[`${selectedDataset}_avg`];
+
+				// Skip year 1900 (overall sections)
+				if (year === 1900) {
+					return;
+				}
+
+				if (!yearMap[year]) {
+					yearMap[year] = {
+						sum: 0,
+						count: 0,
+					};
+				}
+
+				yearMap[year].sum += avg;
+				yearMap[year].count += 1;
+			});
+
+			// Calculate averages and create array, sorted by year
+			const yearAverages = Object.keys(yearMap)
+				.map((year) => ({
+					year: parseInt(year),
+					average: yearMap[year].sum / yearMap[year].count,
+				}))
+				.sort((a, b) => a.year - b.year);
+
+			if (yearAverages.length === 0) {
+				alert(`No valid year data found for ${deptName} ${courseId}.`);
+				return;
+			}
+
+			// Extract labels (years) and values (averages)
+			const labels = yearAverages.map((item) => item.year.toString());
+			const values = yearAverages.map((item) => item.average);
+
+			// Render as line chart
+			renderCourseLineChart(labels, values, `${deptName.toUpperCase()} ${courseId}`);
+		} catch (err) {
+			console.error("Error loading course over years:", err);
+			alert("Failed to load course data. Check console for details.");
+		}
+	}
+
+	function renderCourseLineChart(labels, values, courseTitle) {
+		if (currentChart) currentChart.destroy();
+
+		currentChart = new Chart(insightCanvas, {
+			type: "line",
+			data: {
+				labels: labels,
+				datasets: [
+					{
+						label: `${courseTitle} Average Over Years`,
+						data: values,
+						borderColor: "#0077cc",
+						backgroundColor: "rgba(0, 119, 204, 0.1)",
+						borderWidth: 3,
+						pointRadius: 5,
+						pointBackgroundColor: "#0077cc",
+						tension: 0.2, // slight curve to the line
+						fill: true,
+					},
+				],
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				scales: {
+					y: {
+						beginAtZero: false,
+						title: {
+							display: true,
+							text: "Average Grade",
+						},
+					},
+					x: {
+						title: {
+							display: true,
+							text: "Year",
+						},
+					},
+				},
+			},
+		});
+	}
+
+	// Event listener for Graph 1 button - loads top sections when clicked
+	graph1Btn.addEventListener("click", async () => {
+		if (!selectedDataset) {
+			alert("Please select a dataset first by clicking on a radio button in the 'Added Sections' list.");
+			return;
+		}
+
+		if (!graph1DeptSelect.value) {
+			alert("Please select a department from the dropdown.");
+			return;
+		}
+
+		lastGraphFunction = loadTopSections; // Remember this graph
+		await loadTopSections();
 	});
 
-	graph2Btn.addEventListener("click", () => {
-		const data = getExampleData();
-		renderChart("line", data.labels, data.valuesB);
+	// Event listener for department dropdown change - auto-update if data already loaded
+	graph1DeptSelect.addEventListener("change", async () => {
+		// Only auto-update if a dataset is selected, chart exists, and we know which graph to show
+		if (selectedDataset && currentChart && lastGraphFunction) {
+			await lastGraphFunction();
+		}
 	});
 
-	graph3Btn.addEventListener("click", () => {
-		const data = getExampleData();
-		const scatterPoints = data.valuesC.map((v, i) => ({ x: i, y: v }));
-		renderChart("scatter", scatterPoints, scatterPoints);
+	// Event listener for Graph 2 button - loads top instructors when clicked
+	graph2Btn.addEventListener("click", async () => {
+		if (!selectedDataset) {
+			alert("Please select a dataset first by clicking on a radio button in the 'Added Sections' list.");
+			return;
+		}
+
+		if (!graph1DeptSelect.value) {
+			alert("Please select a department from the dropdown.");
+			return;
+		}
+
+		lastGraphFunction = loadTopInstructors; // Remember this graph
+		await loadTopInstructors();
+	});
+
+	// Event listener for Graph 3 button - loads course over years when clicked
+	graph3Btn.addEventListener("click", async () => {
+		if (!selectedDataset) {
+			alert("Please select a dataset first by clicking on a radio button in the 'Added Sections' list.");
+			return;
+		}
+
+		if (!graph1DeptSelect.value) {
+			alert("Please select a department from the dropdown.");
+			return;
+		}
+
+		lastGraphFunction = loadCourseOverYears; // Remember this graph
+		await loadCourseOverYears();
 	});
 });

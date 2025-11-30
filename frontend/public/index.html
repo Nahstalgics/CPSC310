@@ -36,31 +36,20 @@
 		<h2>Dataset Insights</h2>
 
 		<div class="insight-buttons">
-			<button id="graph1Btn">Show Graph 1</button>
-			<button id="graph2Btn">Show Graph 2</button>
+			<!-- Now always visible -->
+			<div id="graph1Controls" style="margin-top: 10px;">
+				<label for="graph1DeptSelect">Choose Department:</label>
+				<select id="graph1DeptSelect"></select>
+			</div>
+
+
+			<button id="graph1Btn">Courses with Highest Averages</button>
+			<button id="graph2Btn">Professors With Highest Averages</button>
 			<button id="graph3Btn">Show Graph 3</button>
 		</div>
 
 		<div style="width: 600px; height: 350px; margin-top: 20px;">
 			<canvas id="insightChart"></canvas>
-		</div>
-	</section>
-
-	<!-- May be a feature we run if time	-->
-	<section id="querySection">
-		<h2>Run Query</h2>
-		<div class="query-container">
-			<!-- Query input on the left -->
-			<div class="query-input">
-				<textarea id="queryInput" rows="10" placeholder='Enter query JSON here'></textarea>
-				<button id="runQueryBtn">Run Query</button>
-			</div>
-
-			<!-- Query results on the right -->
-			<div class="query-results">
-				<h3>Results</h3>
-				<ul id="queryResultsList"></ul>
-			</div>
 		</div>
 	</section>
 </main>
