@@ -9,7 +9,12 @@ For information about the project, autotest, and the checkpoints, see the course
 1.  type `yarn start:all`
 2.  leave the terminal running, and open a new terminal
 3.  in this new terminal, type `open frontend/public/index.html`
-4.  you will now be rederected to the InsightUBC web page 
+4.  you will now be rederected to the InsightUBC web page
+
+Alternatively...
+
+1. type `npm start` in terminal
+2. open http://localhost:4321/index.html
 
 ## Configuring your environment
 
